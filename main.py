@@ -34,7 +34,9 @@ class Board:
             print(position,units.Name, units.Hp, units.Damage)
     def amount_units(self):
         return len(self.order)
-    def remove_fainted(self):
+    def remove_fainted_list(self):
+        
+        self.order = [x for x in self.order if not x.alive_check()]
         
     # def moveup(self):
         # for unit in self.order:
@@ -50,11 +52,12 @@ def battle_phase(board1,board2):
     board2.order[0].damage_unit(board1.order[0].Damage)
 
     #post attack
-
+    board1.remove_fainted_list()
+    board2.remove_fainted_list()
 
     #results
-    
-    if board1.amount_units() == 0 and board2.amount_units()!=0:
+    print
+    if board1.amount_units() == 0 and  board2.amount_units()!=0:
         print("board 1 wins")
     elif board1.amount_units() != 0 and board2.amount_units()==0:
         print("board 2 wins")
@@ -83,7 +86,11 @@ def display_board(board1,board2):
     print("┃                    ┃")
     print("======================")
     battle_phase(board1,board2)
-
+    print("======================")
+    print("======================")
+    board1.show_order()
+    print("======================")
+    board2.show_order()
 otter= Unit("otter",1,3)
 
 rat= Unit("rat",1,3)
