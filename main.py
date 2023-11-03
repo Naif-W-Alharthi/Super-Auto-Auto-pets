@@ -278,7 +278,8 @@ def battle_phase(board1,board2):
 
     
 dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","rat","fish","cricket","horse"],3:["snail","crab","swan","rat","hedgehog","peacock","flmingo","worm","kangaroo","spider"],5:["dodo","badger","dolphin","giraffe","elephint","camel","rabbit","bull","dog","sheep"]
-               ,7:["skunk","hipoo","pufferfish","turtle","squrial"],9:["scropion"],11:["leopard"]}
+               ,7:["skunk","hipoo","pufferfish","turtle","squrial","penguin","deer","whale","parrot"],9:["scropion","crocidle","rhino","monkey","armadilo","cow","seal","chciken","shark","turkey"]
+               ,11:["leopard","boar","tiger","wolvrine","gorilla","dragon","mamotth","cat","snake","fly"]}
 
 class Unit_store:
     def __init__(self):
