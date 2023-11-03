@@ -277,23 +277,28 @@ def battle_phase(board1,board2):
     ##
 
     
-dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","rat","fish","cricket","horse"],3:["snail"],5:["dodo"],7:["skunk"],9:["scropion"],11:["leopard"]}
+dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","rat","fish","cricket","horse"],3:["snail","crab","swan","rat","hedgehog","peacock","flmingo","worm","kangaroo","spider"],5:["dodo","badger","dolphin","giraffe","elephint","camel","rabbit","bull","dog","sheep"]
+               ,7:["skunk","hipoo","pufferfish","turtle","squrial"],9:["scropion"],11:["leopard"]}
 
 class Unit_store:
     def __init__(self):
         self.amount_of_units=3
         self.units= []
         self.turn = 1
+        self.gold = 10
     def increase_turn(self):
         self.turn=self.turn+1
         if self.turn ==5 or self.turn == 9:
             self.amount_of_units = self.amount_of_units+1
 
     def generate_units(self):
-        list_ally_index = np.randint((self.turn-1//2)*10,self.amount_of_units)
+        generated_units = np.randint((self.turn-1//2)*10,self.amount_of_units)
             
-        return list_ally_index
-
+        return generated_units
+    def buy(self,unit,place):
+        if self.gold >2:
+            self.gold -3
+            self.units.insert(unit,place)
         
 def display_board(board1,board2):
     # while add loops here for gods sake 
