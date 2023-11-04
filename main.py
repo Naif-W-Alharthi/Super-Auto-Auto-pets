@@ -327,13 +327,13 @@ def display_board(board1,board2):
     # board2.show_order_display()
     
 
-print(dict_of_pets[1]+dict_of_pets[3])
+# print(dict_of_pets[1]+dict_of_pets[3])
 
-# ant= Unit("ant",2,3)
-# ant1= Unit("otter",1,3)
-# first_board = Board([ant,ant1])
-# otter_buffed= Unit("duck",2,3)
-# otter_buffed1= Unit("duck",2,3)
-# otter_buffed2= Unit("duck",2,3)
-# second_board = Board([otter_buffed,otter_buffed1,otter_buffed2])
-# display_board(first_board,second_board)
+ant= Unit("ant",2,3)
+ant1= Unit("otter",1,3)
+first_board = Board([ant,ant1])
+otter_buffed= Unit("duck",2,3)
+otter_buffed1= Unit("duck",2,3)
+otter_buffed2= Unit("duck",2,3)
+second_board = Board([otter_buffed,otter_buffed1,otter_buffed2])
+display_board(first_board,second_board)
