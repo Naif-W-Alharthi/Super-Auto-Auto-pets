@@ -32,9 +32,14 @@ def duck_ability(duck,shop_board):
 #1)hurt (alive units get pirio)
 #2)faint (by which one dies first) (tie is broken by left to right on player side?)
 #
+def faint_activation(self):
+    return not self.alive_check()
+    
+def skippper(self):
+    return False
 
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosquito":[mosquito_ability,"start_of_round"],"duck":[otter_ability,"buy"]} 
-
+ability_type_dict= {"faint":faint_activation,"buy":skippper}
 class Unit:
     def __init__(self,Name,Damage,Hp):
         self.Name = Name
@@ -45,21 +50,22 @@ class Unit:
         self.Cost =3 
         self.level=1
         self.Tier=1
-        self.Sell_price=1*self.level
+        self.Sell_price=self.level
         self.perk = None
         self.state="Alive"
         self.ability=ability_dict[Name][0]
         self.temp_buff_hp = 0
         self.temp_buff_damage= 0
         self.activated_flag = False
-        self.activation_condition_var = ability_dict[Name][1]
-        
+        # self.activation_condition_var = ability_dict[Name][1]
+    
+        self.ability_condtion_func = ability_type_dict[ability_dict[Name][1]]
         self.ability_limit=0
         self.ability_flag=False
 
     def update(self):
         # print(self.activation_condition_var)
-        self.activation_condition(self.activation_condition_var)
+        self.activation_condition(self.ability_condtion_func(self))
     def attack(self,enemy):
         enemy.round_hp = enemy.round_hp - self.Damage
         self.round_hp = self.round_hp - enemy.Damage
@@ -85,11 +91,11 @@ class Unit:
         self.Damage=self.Damage + Damage
         self.temp_buff_hp = Hp
         self.temp_buff_damage= Damage
-    def activation_condition(self,type):
+    def activation_condition(self,function):
         # print(self.Name)
-        if type=="faint":
+        if function:
            
-            if self.alive_check() == False:
+           
                 
                 self.ability_flag= True
 
@@ -178,7 +184,7 @@ class Board:
     def random_ally_single(self):
 
         list_ally_index = np.random.randint(0,self.amount_units(),1)
-            
+        
         return self.order[list_ally_index[0]]
     def update_board(self):
         ###careful of order
@@ -337,3 +343,4 @@ otter_buffed1= Unit("duck",2,3)
 otter_buffed2= Unit("duck",2,3)
 second_board = Board([otter_buffed,otter_buffed1,otter_buffed2])
 display_board(first_board,second_board)
+
