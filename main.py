@@ -297,6 +297,8 @@ class Unit_store:
         self.turn=self.turn+1
         if self.turn ==5 or self.turn == 9:
             self.amount_of_units = self.amount_of_units+1
+        if self.turn in [3,7,9,11]:
+            self.add_unitpool()
 
     def generate_units(self):
         generated_units = np.randint((self.turn-1//2)*10,self.amount_of_units)
@@ -306,7 +308,8 @@ class Unit_store:
         if self.gold >2:
             self.gold -3
             self.units.insert(unit,place)
-        
+    def add_unitpool(self):
+        self.units= self.units +dict_of_pets[self.turn]
 def display_board(board1,board2):
     # while add loops here for gods sake 
 
@@ -334,7 +337,7 @@ def display_board(board1,board2):
     
 
 # print(dict_of_pets[1]+dict_of_pets[3])
-
+"""
 ant= Unit("ant",2,3)
 ant1= Unit("otter",1,3)
 first_board = Board([ant,ant1])
@@ -343,4 +346,4 @@ otter_buffed1= Unit("duck",2,3)
 otter_buffed2= Unit("duck",2,3)
 second_board = Board([otter_buffed,otter_buffed1,otter_buffed2])
 display_board(first_board,second_board)
-
+"""
