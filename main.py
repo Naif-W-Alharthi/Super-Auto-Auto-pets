@@ -38,7 +38,9 @@ def faint_activation(self):
 def skippper(self):
     return False
 
-ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosquito":[mosquito_ability,"start_of_round"],"duck":[otter_ability,"buy"]} 
+ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosquito":[mosquito_ability,"start_of_round"],
+               "duck":[otter_ability,"buy"],"beaver":[otter_ability,"buy"],"pig":[otter_ability,"buy"],"mouse":[otter_ability,"buy"],
+               "fish":[otter_ability,"buy"],"cricket":[otter_ability,"buy"],"house":[otter_ability,"buy"]} 
 ability_type_dict= {"faint":faint_activation,"buy":skippper}
 class Unit:
     def __init__(self,Name,Damage,Hp):
@@ -285,21 +287,22 @@ def battle_phase(board1,board2):
     ##
 
     
-dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","rat","fish","cricket","horse"],3:["snail","crab","swan","rat","hedgehog","peacock","flmingo","worm","kangaroo","spider"],5:["dodo","badger","dolphin","giraffe","elephint","camel","rabbit","bull","dog","sheep"]
+dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish","cricket","horse"],3:["snail","crab","swan","rat","hedgehog","peacock","flmingo","worm","kangaroo","spider"],5:["dodo","badger","dolphin","giraffe","elephint","camel","rabbit","bull","dog","sheep"]
                ,7:["skunk","hipoo","pufferfish","turtle","squrial","penguin","deer","whale","parrot"],9:["scropion","crocidle","rhino","monkey","armadilo","cow","seal","chciken","shark","turkey"]
                ,11:["leopard","boar","tiger","wolvrine","gorilla","dragon","mamotth","cat","snake","fly"]}
 
+dict_of_pets_with_stats ={"duck":[2,3],"beaver":[3,2],"otter":[1,3],"pig":[4,1],"ant":[2,2],"mosquito":[2,2],"mouse":[1,2],"fish":[2,3],"cricket":[1,2],"house":[2,1]}
 dict_of_items={1:["apple","honey"],3:["pill","meat","cupcake"],5:["salad","onion"],7:["canned food","pear"],9:["pepper","choco","sushi"],11:["steak","melon","mushroom","pizza"]}
 class Unit_store:
-    def __init__(self,board):
+    def __init__(self):
         self.amount_of_units=3
         self.units_pool= np.array([])
         self.turn = 1
         self.gold = 10
-        self.units= ["0","1","2","3","4","5"] ##player units 
+        self.units= [] ##player units 
         self.shop_units=[]
         self.add_unitpool()
-        self.board = board
+        
     def increase_turn(self):
         self.turn=self.turn+1
         if self.turn ==5 or self.turn == 9:
@@ -312,11 +315,13 @@ class Unit_store:
 
         
         self.shop_units=self.units_pool[generated_units]
-        print(self.shop_units)
+        print(self.shop_units,"shop units")
     def buy(self,index,place):
+
         if self.gold >2:
-            self.gold -3
-            self.units.insert(self.shop_units[index],place)
+            self.gold =self.gold-3
+            self.units.insert(place,self.shop_units[index])
+            # print("bought the ",self.shop_units[index],place)
     def add_unitpool(self):
         self.units_pool=  np.concatenate((self.units_pool,dict_of_pets[self.turn]))
         # np.concatenate([a,b], axis=1) 
@@ -365,9 +370,14 @@ def display_board(board1,board2):
 
 shop= Unit_store()
 shop.generate_units()
-shop.reroll()
+# shop.reroll()
 shop.buy(2,1)
+shop.buy(1,4)
+shop.buy(0,3)
+
 shop.read_player_units()
+
+
 # print(dict_of_pets[1]+dict_of_pets[3])
 """
 ant= Unit("ant",2,3)
