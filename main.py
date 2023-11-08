@@ -1,4 +1,4 @@
-import tensorflow as tf
+# import tensorflow as tf
 # import random
 from numpy.random import seed
 from numpy.random import randint
@@ -115,6 +115,8 @@ class Board:
         for unit in units:
             self.order.append(unit)
             self.start_order.append(unit)
+    def add_unit(self,unit):
+        self.start_order= self.start_order.append(unit)
     def show_order(self):
         for position,units in enumerate(self.order[::-1]):
             self.order.append(units)
@@ -128,7 +130,7 @@ class Board:
         self.order = [x for x in self.order if  x.alive_check()]
     
         # print(self.order[0].alive_check())
-
+    
 
 
     def show_order_display(self,other_board = None):
@@ -287,12 +289,17 @@ dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","rat","fish","c
                ,7:["skunk","hipoo","pufferfish","turtle","squrial","penguin","deer","whale","parrot"],9:["scropion","crocidle","rhino","monkey","armadilo","cow","seal","chciken","shark","turkey"]
                ,11:["leopard","boar","tiger","wolvrine","gorilla","dragon","mamotth","cat","snake","fly"]}
 
+dict_of_items={1:["apple","honey"],3:["pill","meat","cupcake"],5:["salad","onion"],7:["canned food","pear"],9:["pepper","choco","sushi"],11:["steak","melon","mushroom","pizza"]}
 class Unit_store:
-    def __init__(self):
+    def __init__(self,board):
         self.amount_of_units=3
-        self.units= []
+        self.units_pool= np.array([])
         self.turn = 1
         self.gold = 10
+        self.units= ["0","1","2","3","4","5"] ##player units 
+        self.shop_units=[]
+        self.add_unitpool()
+        self.board = board
     def increase_turn(self):
         self.turn=self.turn+1
         if self.turn ==5 or self.turn == 9:
@@ -301,15 +308,35 @@ class Unit_store:
             self.add_unitpool()
 
     def generate_units(self):
-        generated_units = np.randint((self.turn-1//2)*10,self.amount_of_units)
-            
-        return generated_units
-    def buy(self,unit,place):
+        generated_units = np.random.randint((self.turn-1//2)*10,size=self.amount_of_units)
+
+        
+        self.shop_units=self.units_pool[generated_units]
+        print(self.shop_units)
+    def buy(self,index,place):
         if self.gold >2:
             self.gold -3
-            self.units.insert(unit,place)
+            self.units.insert(self.shop_units[index],place)
     def add_unitpool(self):
-        self.units= self.units +dict_of_pets[self.turn]
+        self.units_pool=  np.concatenate((self.units_pool,dict_of_pets[self.turn]))
+        # np.concatenate([a,b], axis=1) 
+    def reroll(self):
+        if self.gold >0:
+
+            self.generate_units()
+            self.gold = self.gold-1
+        else:
+            print(self.gold)
+            print("no gold no spin")
+    
+    def read(self):
+        print(self.shop_units)
+    def read_player_units(self):
+        print(self.units)
+    def create_board_for_battle(self):
+        # process list
+        return self.units
+    
 def display_board(board1,board2):
     # while add loops here for gods sake 
 
@@ -336,6 +363,11 @@ def display_board(board1,board2):
     # board2.show_order_display()
     
 
+shop= Unit_store()
+shop.generate_units()
+shop.reroll()
+shop.buy(2,1)
+shop.read_player_units()
 # print(dict_of_pets[1]+dict_of_pets[3])
 """
 ant= Unit("ant",2,3)
@@ -347,3 +379,4 @@ otter_buffed2= Unit("duck",2,3)
 second_board = Board([otter_buffed,otter_buffed1,otter_buffed2])
 display_board(first_board,second_board)
 """
+#pytorch
