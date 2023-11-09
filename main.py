@@ -10,20 +10,27 @@ class match_env:
     #turn is something adding up as a count 
 
 
-def otter_ability(otter):
+def otter_ability(otter,owner_board):
+
+    for k in owner_board.random_n_amount_of_units(otter.level):
+    
+        k.temp_buff(1,0)
     ##when bought give random ally +1*lvl hp 
     pass
-def mosquito_ability(self,enemy_board):
+def mosquito_ability(self,owner_board):
+    print("MOSQUITO ACTIVE ")
     if self.ability_flag == True:
-        target_unit =enemy_board.random_single_unit()
+        target_unit =owner_board.enemy_board.random_single_unit()
         target_unit.take_damage(self.level)
         print(target_unit.Name, "took damage")
+        owner_board.enemy_board.remove_fainted_list()
+        owner_board.remove_fainted_list()
     
 
-def ant_ability(ant,owner_board):
-    if ant.ability_flag == True:
-        buff_amount = ant.level
-        owner_board.random_single_unit().temp_buff(buff_amount,buff_amount)
+def ant_ability(self,owner_board=None):
+    if self.ability_flag == True:
+        buff_amount = self.level
+        self.owner_board.random_single_unit().temp_buff(buff_amount,buff_amount)
         
 
 
@@ -42,11 +49,11 @@ def faint_activation(self):
 def skippper(self):
     return False
 
-def start_of_battle(board_state):
+def start_of_battle(self):
+    
+    return  self.owner_board.state == "start_of_battle"
 
-    return  board_state == "start_of_battle"
-
-ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"buy"],
+ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[otter_ability,"buy"],"beaver":[otter_ability,"buy"],"pig":[otter_ability,"buy"],"mouse":[otter_ability,"buy"],
                "fish":[otter_ability,"buy"],"cricket":[otter_ability,"buy"],"horse":[otter_ability,"buy"]} 
 ability_type_dict= {"faint":faint_activation,"buy":skippper,"start_of_battle":start_of_battle}
@@ -56,7 +63,7 @@ class Unit:
         self.round_hp = Hp
         self.base_Hp = Hp
         self.Damage = Damage
-        
+        # x.ability_flag and not x.activated_flag
         self.Cost =3 
         self.level=1
         self.Tier=1
@@ -67,14 +74,14 @@ class Unit:
         self.temp_buff_hp = 0
         self.temp_buff_damage= 0
         self.activated_flag = False
-        # self.activation_condition_var = ability_dict[Name][1]
-    
+        self.owner_board = None
         self.ability_condtion_func = ability_type_dict[ability_dict[Name][1]]
         self.ability_limit=0
         self.ability_flag=False
 
     def update(self):
         # print(self.activation_condition_var)
+     
         self.activation_condition(self.ability_condtion_func(self))
     def attack(self,enemy):
         enemy.round_hp = enemy.round_hp - self.Damage
@@ -85,10 +92,7 @@ class Unit:
             enemy.state="Faint"
         if self.round_hp <= 0:
             self.state="Faint"
-            # if type=="faint":
-            #     if self.alive_check == False:
-            #         self.ability_flag= True
-            #         print("This activates passively")
+    
 
     def alive_check(self):
         return self.state =="Alive"
@@ -103,8 +107,9 @@ class Unit:
         self.temp_buff_damage= Damage
     def activation_condition(self,function):
         # print(self.Name)
-       
-        if self.function():
+        # print(function(self),"function check")
+        
+        if function:
            
            
                 
@@ -127,9 +132,11 @@ class Board:
         self.order = []
         self.start_order = []
         self.state= None
+        self.enemy_board = None
         for unit in units:
             self.order.append(unit)
             self.start_order.append(unit)
+            unit.owner_board = self
     def add_unit(self,unit):
         self.start_order= self.start_order.append(unit)
     
@@ -166,7 +173,7 @@ class Board:
             # print(f""" -----{position}---\n|    {units.Name}    |\n|damage:{units.Damage}||hp:{unitsround_hp}|""")
             curr_upper=curr_upper+base_upper
             curr_upo_middle =curr_upo_middle+base_upo_middle.replace("P",str(position))
-            print(position,units,"positions and units in show order")
+           
             curr_middle = curr_middle + base_middle.replace("N",units.Name[0:2])
             tmep_ =  base_low_middle.replace("d",str(units.Damage))
             tmep_ = tmep_.replace("h",str(units.round_hp))
@@ -194,7 +201,7 @@ class Board:
         print(curr_middle)         
         print(curr_low_middle)
         print(curr_lower)   
-    def random_ally(self,num_ally):
+    def random_n_amount_of_units(self,num_ally):
 
         list_ally_index = np.randint(0,self.amount_units(),num_ally)
             
@@ -210,28 +217,21 @@ class Board:
         self.update_board_level_1()
         # print(self.start_order[0].ability_flag,"BASE START ORDER")
         self.start_order_abilities = [x for x in self.start_order if  x.ability_flag and not x.activated_flag ]
-       
+        print(self.start_order_abilities)
         for units in self.start_order_abilities:
-            
+            print(units,"ability and unity",units.ability)
             units.ability(units,self)
 
             units.activated_flag = True
-            print(units.Name,"ability acitciated")  
-
+            print(units.Name,"ABILITY FOR THE UNIT HAVE USE222")  
     def update_board_level_1(self):
         ###first surface level check
-     
-       
-        for units in self.start_order:
-            
+        for units in self.start_order:      
             units.update()
-
 
     def add_unit_attack_q(self,unit):
         pass
-    # def moveup(self):
-        # for unit in self.order:
-        #     unit
+
     def reset_board(self,board2):
         for units in self.start_order+board2.start_order:
             units.round_end()
@@ -245,13 +245,16 @@ class Board:
     def mid_battle_state(self,board2):
         self.state = "mid_battle"
         board2.state = "mid_battle"
+    def enemy_board_linking(self,board2):
+        self.enemy_board =board2
+        board2.enemy_board = self
 def battle_phase(board1,board2):
     # print(board1.show_order(),board2.show_order())
     battle_finished = False
     round_count= 0
     # print("board 1")
     board1.show_order_display(board2)
-   
+    board1.enemy_board_linking(board2)
     # print("board 2")
     # board2.show_order_display()
     # battle_phase(board1,board2)
@@ -262,14 +265,17 @@ def battle_phase(board1,board2):
         
         round_count= 1+round_count
         #mid attacl
-        
+       
         print("======================")
         print("┃                    ┃")
         print("┃      round  ",round_count,"    ┃")
         print("┃                    ┃")
         print("======================")
-        if round ==1:
+        if round_count ==1:
+            print("START THE ROUND")
             board1.start_board(board2)
+            board1.remove_fainted_list()
+            board2.remove_fainted_list()
         else:
             board1.mid_battle_state(board2)
         board2.order[0].attack(board1.order[0])
@@ -445,8 +451,8 @@ def display_board(board1,board2):
 # display_board(board_for_combat,board_for_combat)
 # print(dict_of_pets[1]+dict_of_pets[3])
 
-ant= Unit("mosqutio",2,3)
-ant1= Unit("mosqutio",2,3)
+ant= Unit("ant",0,3)
+ant1= Unit("mosqutio",0,3)
 first_board = Board([ant,ant1])
 otter_buffed= Unit("duck",2,3)
 # otter_buffed1= Unit("duck",2,3)
