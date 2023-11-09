@@ -104,7 +104,7 @@ class Unit:
     def activation_condition(self,function):
         # print(self.Name)
        
-        if function(self):
+        if self.function():
            
            
                 
@@ -126,6 +126,7 @@ class Board:
     def __init__(self,units):
         self.order = []
         self.start_order = []
+        self.state= None
         for unit in units:
             self.order.append(unit)
             self.start_order.append(unit)
@@ -238,7 +239,12 @@ class Board:
         board2.order = board2.start_order
     def fainted(self):
         print( [x for x in self.start_order if not x.alive_check()])
-   
+    def start_board(self,board2):
+        self.state = "start_of_battle"
+        board2.state = "start_of_battle"
+    def mid_battle_state(self,board2):
+        self.state = "mid_battle"
+        board2.state = "mid_battle"
 def battle_phase(board1,board2):
     # print(board1.show_order(),board2.show_order())
     battle_finished = False
@@ -264,6 +270,8 @@ def battle_phase(board1,board2):
         print("======================")
         if round ==1:
             board1.start_board(board2)
+        else:
+            board1.mid_battle_state(board2)
         board2.order[0].attack(board1.order[0])
         board1.update_board()
         board2.update_board()
