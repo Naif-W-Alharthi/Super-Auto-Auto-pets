@@ -3,6 +3,7 @@
 from numpy.random import seed
 from numpy.random import randint
 import numpy as np
+import copy 
 class match_env:
     def __init__(self):
         pass
@@ -38,9 +39,9 @@ def faint_activation(self):
 def skippper(self):
     return False
 
-ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosquito":[mosquito_ability,"start_of_round"],
+ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"buy"],
                "duck":[otter_ability,"buy"],"beaver":[otter_ability,"buy"],"pig":[otter_ability,"buy"],"mouse":[otter_ability,"buy"],
-               "fish":[otter_ability,"buy"],"cricket":[otter_ability,"buy"],"house":[otter_ability,"buy"]} 
+               "fish":[otter_ability,"buy"],"cricket":[otter_ability,"buy"],"horse":[otter_ability,"buy"]} 
 ability_type_dict= {"faint":faint_activation,"buy":skippper}
 class Unit:
     def __init__(self,Name,Damage,Hp):
@@ -119,10 +120,13 @@ class Board:
             self.start_order.append(unit)
     def add_unit(self,unit):
         self.start_order= self.start_order.append(unit)
+    
     def show_order(self):
-        for position,units in enumerate(self.order[::-1]):
-            self.order.append(units)
+        # for position,units in enumerate(self.order[::-1]):
+        #     self.order.append(units)
             # print(position,units.Name, unitsround_hp, units.Damage)
+        print(self.order,"show order")
+        print(self.order[0])
     
     def amount_units(self):
         return len(self.order)
@@ -152,6 +156,7 @@ class Board:
             # print(f""" -----{position}---\n|    {units.Name}    |\n|damage:{units.Damage}||hp:{unitsround_hp}|""")
             curr_upper=curr_upper+base_upper
             curr_upo_middle =curr_upo_middle+base_upo_middle.replace("P",str(position))
+            print(position,units,"positions and units in show order")
             curr_middle = curr_middle + base_middle.replace("N",units.Name[0:2])
             tmep_ =  base_low_middle.replace("d",str(units.Damage))
             tmep_ = tmep_.replace("h",str(units.round_hp))
@@ -291,7 +296,7 @@ dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish",
                ,7:["skunk","hipoo","pufferfish","turtle","squrial","penguin","deer","whale","parrot"],9:["scropion","crocidle","rhino","monkey","armadilo","cow","seal","chciken","shark","turkey"]
                ,11:["leopard","boar","tiger","wolvrine","gorilla","dragon","mamotth","cat","snake","fly"]}
 
-dict_of_pets_with_stats ={"duck":[2,3],"beaver":[3,2],"otter":[1,3],"pig":[4,1],"ant":[2,2],"mosquito":[2,2],"mouse":[1,2],"fish":[2,3],"cricket":[1,2],"house":[2,1]}
+dict_of_pets_with_stats ={"duck":[2,3],"beaver":[3,2],"otter":[1,3],"pig":[4,1],"ant":[2,2],"mosqutio":[2,2],"mouse":[1,2],"fish":[2,3],"cricket":[1,2],"horse":[2,1]}
 dict_of_items={1:["apple","honey"],3:["pill","meat","cupcake"],5:["salad","onion"],7:["canned food","pear"],9:["pepper","choco","sushi"],11:["steak","melon","mushroom","pizza"]}
 class Unit_store:
     def __init__(self):
@@ -299,8 +304,8 @@ class Unit_store:
         self.units_pool= np.array([])
         self.turn = 1
         self.gold = 10
-        self.units= [] ##player units 
-        self.shop_units=[]
+        self.player_units= ["0","1","2","3","4","5","6"]##player units 
+        self.shop_units=list()
         self.add_unitpool()
         
     def increase_turn(self):
@@ -312,16 +317,42 @@ class Unit_store:
 
     def generate_units(self):
         generated_units = np.random.randint((self.turn-1//2)*10,size=self.amount_of_units)
-
+        temp_shop = []
+        
         
         self.shop_units=self.units_pool[generated_units]
-        print(self.shop_units,"shop units")
-    def buy(self,index,place):
+        
+        for index,unit in enumerate(self.shop_units):
+            damage,hp  = dict_of_pets_with_stats[unit]
+            new_unit = Unit(unit,damage,hp)
+          
+            
+            # self.shop_units = np.insert(self.player_units,index,new_unit)
+            
+            temp_shop.append(new_unit)
+           
+            # self.shop_units= np.delete(self.shop_units,index)
+            # np.delete(self.shop_units,index)
+            # self.player_units = np.insert(self.player_units,index,new_unit)
+            self.shop_units = copy.deepcopy(temp_shop)
+            temp_shop=[]#empty to avoid memory issues 
+        print(self.shop_units,"shop unit check from generate")
 
+        # print(self.shop_units,"shop units")
+    def buy(self,index,place):
+        print(self.shop_units,"SHOP SAW THIS LIST")
+        
         if self.gold >2:
             self.gold =self.gold-3
-            self.units.insert(place,self.shop_units[index])
-            # print("bought the ",self.shop_units[index],place)
+            
+            self.player_units[place]= self.shop_units[index]
+     
+            # np.insert( self.player_units,place,self.shop_units[index]) 
+            # print(self.shop_units[index],"shop unit index")
+      
+            self.shop_units= np.delete(self.shop_units,index)
+            # print("bought the ",self.shop_units[0].Name,place,"bought test")
+     
     def add_unitpool(self):
         self.units_pool=  np.concatenate((self.units_pool,dict_of_pets[self.turn]))
         # np.concatenate([a,b], axis=1) 
@@ -332,16 +363,24 @@ class Unit_store:
             self.gold = self.gold-1
         else:
             print(self.gold)
-            print("no gold no spin")
+           
     
     def read(self):
         print(self.shop_units)
     def read_player_units(self):
-        print(self.units)
+        print(self.player_units)
     def create_board_for_battle(self):
         # process list
-        return self.units
-    
+        
+        for elemnt in ["0","1","2","3","4","5","6"]:
+                if elemnt in self.player_units:
+                    self.player_units.remove(elemnt)
+                
+                   
+        return self.player_units
+    def freeze(self,index):
+        # freeze unit
+        pass
 def display_board(board1,board2):
     # while add loops here for gods sake 
 
@@ -376,8 +415,11 @@ shop.buy(1,4)
 shop.buy(0,3)
 
 shop.read_player_units()
+print("read players units")
 
-
+board_for_combat = Board(shop.create_board_for_battle())
+board_for_combat.show_order()
+# display_board(board_for_combat,board_for_combat)
 # print(dict_of_pets[1]+dict_of_pets[3])
 """
 ant= Unit("ant",2,3)
