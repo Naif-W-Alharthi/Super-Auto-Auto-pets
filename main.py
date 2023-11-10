@@ -11,12 +11,13 @@ class match_env:
 
 
 def otter_ability(otter,owner_board):
-
+    
     for k in owner_board.random_n_amount_of_units(otter.level):
     
-        k.temp_buff(1,0)
+        k.perma_buff(1,0) 
+        print("buffed", k.name)
     ##when bought give random ally +1*lvl hp 
-    pass
+    
 def mosquito_ability(self,owner_board):
     print("MOSQUITO ACTIVE ")
     if self.ability_flag == True:
@@ -43,6 +44,9 @@ def duck_ability(duck,shop_board):
 #1)hurt (alive units get pirio)
 #2)faint (by which one dies first) (tie is broken by left to right on player side?)
 #
+
+def buy_activiation(self):
+    return self.bought
 def faint_activation(self):
     return not self.alive_check()
     
@@ -56,7 +60,7 @@ def start_of_battle(self):
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[otter_ability,"buy"],"beaver":[otter_ability,"buy"],"pig":[otter_ability,"buy"],"mouse":[otter_ability,"buy"],
                "fish":[otter_ability,"buy"],"cricket":[otter_ability,"buy"],"horse":[otter_ability,"buy"]} 
-ability_type_dict= {"faint":faint_activation,"buy":skippper,"start_of_battle":start_of_battle}
+ability_type_dict= {"faint":faint_activation,"buy":buy_activiation,"start_of_battle":start_of_battle}
 class Unit:
     def __init__(self,Name,Damage,Hp):
         self.Name = Name
@@ -78,6 +82,7 @@ class Unit:
         self.ability_condtion_func = ability_type_dict[ability_dict[Name][1]]
         self.ability_limit=0
         self.ability_flag=False
+        self.bought =False
 
     def update(self):
         # print(self.activation_condition_var)
@@ -92,7 +97,6 @@ class Unit:
             enemy.state="Faint"
         if self.round_hp <= 0:
             self.state="Faint"
-    
 
     def alive_check(self):
         return self.state =="Alive"
@@ -340,6 +344,25 @@ class Unit_store:
         if self.turn in [3,7,9,11]:
             self.add_unitpool()
 
+      
+            
+    def edit_shop(self,shop):
+        self.temp_shop = []
+        self.shop_units =  shop
+        for unit,damage,hp in shop:
+            # damage,hp  = dict_of_pets_with_stats[unit]
+            new_unit = Unit(unit,damage,hp)
+          
+            
+            # self.shop_units = np.insert(self.player_units,index,new_unit)
+            
+            self.temp_shop.append(new_unit)
+           
+            # self.shop_units= np.delete(self.shop_units,index)
+            # np.delete(self.shop_units,index)
+            # self.player_units = np.insert(self.player_units,index,new_unit)
+        self.shop_units = copy.deepcopy(self.temp_shop)
+        self.temp_shop = []
     def generate_units(self):
         generated_units = np.random.randint((self.turn-1//2)*10,size=self.amount_of_units)
         self.temp_shop = []
@@ -370,14 +393,20 @@ class Unit_store:
         if self.gold >2:
             self.gold =self.gold-3
             
+
+            #bought effects
+            self.shop_units[index].bought = True
+            self.shop_units[index].update
+            
+                
+
             self.player_units[place]= self.shop_units[index]
-     
+
             # np.insert( self.player_units,place,self.shop_units[index]) 
             # print(self.shop_units[index],"shop unit index")
       
             self.shop_units= np.delete(self.shop_units,index)
             # print("bought the ",self.shop_units[0].Name,place,"bought test")
-     
     def add_unitpool(self):
         self.units_pool=  np.concatenate((self.units_pool,dict_of_pets[self.turn]))
         # np.concatenate([a,b], axis=1) 
@@ -388,26 +417,20 @@ class Unit_store:
             self.gold = self.gold-1
         else:
             print(self.gold)
-           
-    
     def read(self):
-        print(self.shop_units)
+        print(self.shop_units,"SHOW READ IS ")
     def read_player_units(self):
         print(self.player_units)
-   
-
     def create_board_for_battle(self):
-        # process list
-        
+        # process list   
         for elemnt in ["0","1","2","3","4","5","6"]:
                 if elemnt in self.player_units:
-                    self.player_units.remove(elemnt)
-                
+                    self.player_units.remove(elemnt)               
         print("PRE BOARD CREATION")
         for k in self.player_units:
             print(k.Name)           
+            k.bought = False
         return self.player_units
-
     def freeze(self,index):
         # freeze unit
         pass
@@ -422,9 +445,8 @@ def display_board(board1,board2):
     # print("board 2")
     # board2.show_order_display()
     battle_phase(board1,board2)
-    print("post battle")
-    board1.reset_board(board2)
-    print(board1.show_order_display(board2))
+    
+   
     # print("======================")
     # print("┃                    ┃")
     # print("┃       Round 2      ┃")
@@ -437,27 +459,29 @@ def display_board(board1,board2):
     # board2.show_order_display()
     
 
-# shop= Unit_store()
-# shop.generate_units()
-# # shop.reroll()
-# shop.buy(2,1)
-# shop.buy(1,4)
+shop= Unit_store()
+shop.generate_units()
+# shop.reroll()
+shop.edit_shop([["horse",1,1],["otter",1,1],["otter",1,1]])
+shop.read()
+shop.buy(0,1)
+shop.buy(1,4)
 # shop.buy(0,3)
 
 # print("read players units")
 
-# board_for_combat = Board(shop.create_board_for_battle())
-# board_for_combat.show_order()
-# display_board(board_for_combat,board_for_combat)
+board_for_combat = Board(shop.create_board_for_battle())
+board_for_combat.show_order()
+display_board(board_for_combat,board_for_combat)
 # print(dict_of_pets[1]+dict_of_pets[3])
 
-ant= Unit("ant",0,3)
-ant1= Unit("mosqutio",0,3)
-first_board = Board([ant,ant1])
-otter_buffed= Unit("duck",2,3)
-# otter_buffed1= Unit("duck",2,3)
-# otter_buffed2= Unit("duck",2,3)
-second_board = Board([otter_buffed])
-display_board(first_board,second_board)
+# ant= Unit("ant",0,3)
+# ant1= Unit("mosqutio",0,3)
+# first_board = Board([ant,ant1])
+# otter_buffed= Unit("duck",2,3)
+# # otter_buffed1= Unit("duck",2,3)
+# # otter_buffed2= Unit("duck",2,3)
+# second_board = Board([otter_buffed])
+# display_board(first_board,second_board)
 
 #pytorch
