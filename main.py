@@ -13,9 +13,10 @@ class match_env:
 def otter_ability(otter,owner_board):
     
     for k in owner_board.random_n_amount_of_units(otter.level):
-    
+        print(k.base_Hp,k.Damage)
         k.perma_buff(1,0) 
-        print("buffed", k.name)
+        print("buffed", k.Name)
+        print(k.base_Hp,k.Damage)
     ##when bought give random ally +1*lvl hp 
     
 def mosquito_ability(self,owner_board):
@@ -207,9 +208,12 @@ class Board:
         print(curr_lower)   
     def random_n_amount_of_units(self,num_ally):
 
-        list_ally_index = np.randint(0,self.amount_units(),num_ally)
-            
-        return list_ally_index
+        list_ally_index = np.random.randint(0,self.amount_units(),num_ally)
+        print(list_ally_index,"list ally_dindex")
+        temp_list = []
+        for k in list_ally_index:
+                temp_list.append(self.order[k])
+        return temp_list
         
     def random_single_unit(self):
 
@@ -396,7 +400,8 @@ class Unit_store:
 
             #bought effects
             self.shop_units[index].bought = True
-            self.shop_units[index].update
+            self.shop_units[index].update()
+            
             
                 
 
