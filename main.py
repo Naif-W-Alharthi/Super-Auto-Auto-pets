@@ -14,7 +14,7 @@ def otter_ability(otter,owner_board):
     
     for k in owner_board.random_n_amount_of_units(otter.level):
         print(k.base_Hp,k.Damage)
-        k.perma_buff(1,0) 
+        k.perma_buff(0,1) 
         print("buffed", k.Name)
         print(k.base_Hp,k.Damage)
     ##when bought give random ally +1*lvl hp 
@@ -102,14 +102,15 @@ class Unit:
     def alive_check(self):
         return self.state =="Alive"
     def perma_buff(self,Damage,Hp):
+        print("perma_buffing")
         self.round_hp = self.round_hp+Hp
         self.Damage=self.Damage + Damage
     def temp_buff(self,Damage,Hp):
         print(Hp,Damage,"temp buff")
         self.round_hp = self.round_hp+Hp
         self.Damage=self.Damage + Damage
-        self.temp_buff_hp = Hp
-        self.temp_buff_damage= Damage
+        self.temp_buff_hp = self.temp_buff_hp+ Hp
+        self.temp_buff_damage=self.temp_buff_damage +Damage
     def activation_condition(self,function):
         # print(self.Name)
         # print(function(self),"function check")
@@ -477,7 +478,8 @@ shop.buy(1,4)
 
 board_for_combat = Board(shop.create_board_for_battle())
 board_for_combat.show_order()
-display_board(board_for_combat,board_for_combat)
+board_for_combat.show_order_display(board_for_combat)
+# display_board(board_for_combat,board_for_combat)
 # print(dict_of_pets[1]+dict_of_pets[3])
 
 # ant= Unit("ant",0,3)
