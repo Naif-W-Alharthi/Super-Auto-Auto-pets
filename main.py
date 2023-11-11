@@ -10,17 +10,17 @@ class match_env:
     #turn is something adding up as a count 
 
 
-def otter_ability(otter,owner_shop):
+def otter_ability(otter,shop_board):
 
-    for k in owner_shop.random_n_amount_of_units(otter.level):
+    for k in shop_board.random_n_amount_of_units(otter.level):
 
         k.perma_buff(0,1) 
-    print("otter ability worked")
+        print("otter ability worked")
     ##when bought give random ally +1*lvl hp 
     
 def mosquito_ability(self,owner_board):
 
-    if self.ability_flag == True:
+  
         target_unit =owner_board.enemy_board.random_single_unit()
         target_unit.take_damage(self.level)
         print(target_unit.Name, "took damage mosquito ")
@@ -29,7 +29,7 @@ def mosquito_ability(self,owner_board):
     
 
 def ant_ability(self,owner_board=None):
-    if self.ability_flag == True:
+   
         buff_amount = self.level
         self.owner_board.random_single_unit().temp_buff(buff_amount,buff_amount)
         
@@ -44,7 +44,10 @@ def duck_ability(duck,shop_board):
 #1)hurt (alive units get pirio)
 #2)faint (by which one dies first) (tie is broken by left to right on player side?)
 #
+def beaver_ability(beaver,shop_board):
+   for k in shop_board.random_n_amount_of_units(2):
 
+        k.perma_buff(0,1) 
 def buy_activiation(self):
     return self.bought
 def faint_activation(self):
@@ -56,11 +59,12 @@ def skippper(self,temp):
 def start_of_battle(self):
     
     return  self.owner_board.state == "start_of_battle"
-
+def sell_activiation(self):
+    return self.selling
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[otter_ability,"buy"],"beaver":[otter_ability,"buy"],"pig":[otter_ability,"buy"],"mouse":[otter_ability,"buy"],
                "fish":[otter_ability,"buy"],"cricket":[otter_ability,"buy"],"horse":[skippper,"buy"]} 
-ability_type_dict= {"faint":faint_activation,"buy":buy_activiation,"start_of_battle":start_of_battle}
+ability_type_dict= {"faint":faint_activation,"buy":buy_activiation,"start_of_battle":start_of_battle,"sell":sell_activiation}
 class Unit:
     def __init__(self,Name,Damage,Hp):
         self.Name = Name
@@ -83,6 +87,8 @@ class Unit:
         self.ability_limit=0
         self.ability_flag=False
         self.bought =False
+        self.selling = False
+
 
     def update(self):
         # update only makes the ability in que be ware of this
@@ -208,8 +214,10 @@ class Board:
         print(curr_low_middle)
         print(curr_lower)   
     def random_n_amount_of_units(self,num_ally):
-
-        list_ally_index = np.random.randint(0,self.amount_units(),num_ally)
+        amount_of_targetable_allies = self.amount_units()
+        if num_ally > amount_of_targetable_allies:
+            num_ally = amount_of_targetable_allies
+        list_ally_index = np.random.randint(0,amount_of_targetable_allies,num_ally)
         print(list_ally_index,"list ally_dindex")
         temp_list = []
         for k in list_ally_index:
@@ -228,11 +236,13 @@ class Board:
         self.start_order_abilities = [x for x in self.start_order if  x.ability_flag and not x.activated_flag ]
         print(self.start_order_abilities)
         for units in self.start_order_abilities:
-            print(units,"ability and unity",units.ability)
-            units.ability(units,self)
 
-            units.activated_flag = True
-            print(units.Name,"ABILITY FOR THE UNIT HAVE USE222")  
+            print(units,"ability and unity",units.ability)
+            if units.ability_flag == True:
+                units.ability(units,self)
+
+                units.activated_flag = True
+                print(units.Name,"ABILITY FOR THE UNIT HAVE USE222")  
     def update_board_level_1(self):
         ###first surface level check
         for units in self.start_order:      
@@ -457,8 +467,10 @@ class Unit_store:
 
         return temp_num
     def random_n_amount_of_units(self,num_ally):
-
-        list_ally_index = np.random.randint(0,self.amount_units(),num_ally)
+        amount_of_targetable_units = self.amount_units()
+        if num_ally >amount_of_targetable_units:
+            num_ally = amount_of_targetable_units
+        list_ally_index = np.random.randint(0,amount_of_targetable_units,num_ally)
  
         temp_list = []
         self.create_targetable_list()
