@@ -10,21 +10,20 @@ class match_env:
     #turn is something adding up as a count 
 
 
-def otter_ability(otter,owner_board):
-    
-    for k in owner_board.random_n_amount_of_units(otter.level):
-        print(k.base_Hp,k.Damage)
+def otter_ability(otter,owner_shop):
+
+    for k in owner_shop.random_n_amount_of_units(otter.level):
+
         k.perma_buff(0,1) 
-        print("buffed", k.Name)
-        print(k.base_Hp,k.Damage)
+    print("otter ability worked")
     ##when bought give random ally +1*lvl hp 
     
 def mosquito_ability(self,owner_board):
-    print("MOSQUITO ACTIVE ")
+
     if self.ability_flag == True:
         target_unit =owner_board.enemy_board.random_single_unit()
         target_unit.take_damage(self.level)
-        print(target_unit.Name, "took damage")
+        print(target_unit.Name, "took damage mosquito ")
         owner_board.enemy_board.remove_fainted_list()
         owner_board.remove_fainted_list()
     
@@ -51,7 +50,7 @@ def buy_activiation(self):
 def faint_activation(self):
     return not self.alive_check()
     
-def skippper(self):
+def skippper(self,temp):
     return False
 
 def start_of_battle(self):
@@ -60,7 +59,7 @@ def start_of_battle(self):
 
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[otter_ability,"buy"],"beaver":[otter_ability,"buy"],"pig":[otter_ability,"buy"],"mouse":[otter_ability,"buy"],
-               "fish":[otter_ability,"buy"],"cricket":[otter_ability,"buy"],"horse":[otter_ability,"buy"]} 
+               "fish":[otter_ability,"buy"],"cricket":[otter_ability,"buy"],"horse":[skippper,"buy"]} 
 ability_type_dict= {"faint":faint_activation,"buy":buy_activiation,"start_of_battle":start_of_battle}
 class Unit:
     def __init__(self,Name,Damage,Hp):
@@ -86,8 +85,9 @@ class Unit:
         self.bought =False
 
     def update(self):
-        # print(self.activation_condition_var)
-     
+        # update only makes the ability in que be ware of this
+        #another object has to force the ability to activate 
+      
         self.activation_condition(self.ability_condtion_func(self))
     def attack(self,enemy):
         enemy.round_hp = enemy.round_hp - self.Damage
@@ -342,6 +342,7 @@ class Unit_store:
         self.shop_units=list()
         self.add_unitpool()
         self.temp_shop = []
+        self.targetable_units =[]
     def increase_turn(self):
         self.turn=self.turn+1
         if self.turn ==5 or self.turn == 9:
@@ -349,7 +350,12 @@ class Unit_store:
         if self.turn in [3,7,9,11]:
             self.add_unitpool()
 
-      
+    def create_targetable_list(self):
+        self.targetable_units =[]
+        for units in self.player_units:
+       
+            if not isinstance(units,str):
+                self.targetable_units.append(units)
             
     def edit_shop(self,shop):
         self.temp_shop = []
@@ -402,7 +408,9 @@ class Unit_store:
             #bought effects
             self.shop_units[index].bought = True
             self.shop_units[index].update()
-            
+            self.shop_units[index].ability(self.shop_units[index],self) 
+            self.shop_units[index].activated_flag = True
+            print(self.shop_units[index].bought,"state of bought for shop unit post update")
             
                 
 
@@ -432,7 +440,7 @@ class Unit_store:
         for elemnt in ["0","1","2","3","4","5","6"]:
                 if elemnt in self.player_units:
                     self.player_units.remove(elemnt)               
-        print("PRE BOARD CREATION")
+
         for k in self.player_units:
             print(k.Name)           
             k.bought = False
@@ -440,6 +448,24 @@ class Unit_store:
     def freeze(self,index):
         # freeze unit
         pass
+    def amount_units(self):
+        temp_num = 0
+        for units in self.player_units:
+
+            if not isinstance(units,str):
+                temp_num = temp_num +1
+
+        return temp_num
+    def random_n_amount_of_units(self,num_ally):
+
+        list_ally_index = np.random.randint(0,self.amount_units(),num_ally)
+ 
+        temp_list = []
+        self.create_targetable_list()
+        for k in list_ally_index:
+                
+                temp_list.append(self.targetable_units[k])
+        return temp_list
 def display_board(board1,board2):
     # while add loops here for gods sake 
 
