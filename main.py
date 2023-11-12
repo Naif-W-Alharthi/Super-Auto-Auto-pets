@@ -47,7 +47,8 @@ def duck_ability(duck,shop_board):
 def beaver_ability(beaver,shop_board):
    for k in shop_board.random_n_amount_of_units(2):
 
-        k.perma_buff(0,1) 
+        k.perma_buff(beaver.level,0) 
+   print("beaver ability stuff")
 def buy_activiation(self):
     return self.bought
 def faint_activation(self):
@@ -60,9 +61,10 @@ def start_of_battle(self):
     
     return  self.owner_board.state == "start_of_battle"
 def sell_activiation(self):
-    return self.selling
+    print("checking on sell", self.selling)
+    return self.selling == True
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
-               "duck":[otter_ability,"buy"],"beaver":[otter_ability,"buy"],"pig":[otter_ability,"buy"],"mouse":[otter_ability,"buy"],
+               "duck":[otter_ability,"buy"],"beaver":[beaver_ability,"sell"],"pig":[otter_ability,"buy"],"mouse":[otter_ability,"buy"],
                "fish":[otter_ability,"buy"],"cricket":[otter_ability,"buy"],"horse":[skippper,"buy"]} 
 ability_type_dict= {"faint":faint_activation,"buy":buy_activiation,"start_of_battle":start_of_battle,"sell":sell_activiation}
 class Unit:
@@ -215,9 +217,8 @@ class Board:
         print(curr_lower)   
     def random_n_amount_of_units(self,num_ally):
         amount_of_targetable_allies = self.amount_units()
-        if num_ally > amount_of_targetable_allies:
-            num_ally = amount_of_targetable_allies
-        list_ally_index = np.random.randint(0,amount_of_targetable_allies,num_ally)
+
+        list_ally_index = list_ally_index = np.random.choice(amount_of_targetable_allies, size=num_ally, replace=False)
         print(list_ally_index,"list ally_dindex")
         temp_list = []
         for k in list_ally_index:
@@ -226,7 +227,7 @@ class Board:
         
     def random_single_unit(self):
 
-        list_ally_index = np.random.randint(0,self.amount_units(),1)
+        list_ally_index = np.random.randint(0,self.amount_units(),1) ## check this if a single random unit is being called and acts funny not using np methods of others 
         
         return self.order[list_ally_index[0]]
     def update_board(self):
@@ -340,7 +341,8 @@ dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish",
                ,7:["skunk","hipoo","pufferfish","turtle","squrial","penguin","deer","whale","parrot"],9:["scropion","crocidle","rhino","monkey","armadilo","cow","seal","chciken","shark","turkey"]
                ,11:["leopard","boar","tiger","wolvrine","gorilla","dragon","mamotth","cat","snake","fly"]}
 
-dict_of_pets_with_stats ={"duck":[2,3],"beaver":[3,2],"otter":[1,3],"pig":[4,1],"ant":[2,2],"mosqutio":[2,2],"mouse":[1,2],"fish":[2,3],"cricket":[1,2],"horse":[2,1]}
+dict_of_pets_with_stats ={"duck":Unit("duck",2,3),"beaver":Unit("beaver",3,2),"otter":Unit("otter",1,3),"pig":Unit("pig",4,1),"ant":Unit("ant",2,2),"mosqutio":Unit("mosqutio",2,2),
+                          "mouse":Unit("mouse",1,2),"fish":Unit("fish",2,3),"cricket":Unit("cricket",1,2),"horse":Unit("horse",2,1)}
 dict_of_items={1:["apple","honey"],3:["pill","meat","cupcake"],5:["salad","onion"],7:["canned food","pear"],9:["pepper","choco","sushi"],11:["steak","melon","mushroom","pizza"]}
 class Unit_store:
     def __init__(self):
@@ -390,10 +392,10 @@ class Unit_store:
         
         
         self.shop_units=self.units_pool[generated_units]
-        
-        for unit in self.shop_units:
-            damage,hp  = dict_of_pets_with_stats[unit]
-            new_unit = Unit(unit,damage,hp)
+       
+        for unit in self.shop_units:                      
+            
+            new_unit = dict_of_pets_with_stats[unit]
           
             
             # self.shop_units = np.insert(self.player_units,index,new_unit)
@@ -409,7 +411,7 @@ class Unit_store:
 
         # print(self.shop_units,"shop units")
     def buy(self,index,place):
-        print(self.shop_units,"SHOP SAW THIS LIST")
+        
         
         if self.gold >2:
             self.gold =self.gold-3
@@ -418,9 +420,10 @@ class Unit_store:
             #bought effects
             self.shop_units[index].bought = True
             self.shop_units[index].update()
+            print(self.shop_units[index],self)
             self.shop_units[index].ability(self.shop_units[index],self) 
             self.shop_units[index].activated_flag = True
-            print(self.shop_units[index].bought,"state of bought for shop unit post update")
+           
             
                 
 
@@ -442,9 +445,14 @@ class Unit_store:
         else:
             print(self.gold)
     def read(self):
-        print(self.shop_units,"SHOW READ IS ")
+        for k in self.shop_units:
+         
+                print(k.Name,k.Damage,k.round_hp)
+        # print(self.shop_units,"SHOW READ IS ")
     def read_player_units(self):
-        print(self.player_units)
+        for k in self.player_units:
+            if isinstance(k,Unit):
+                print(k.Name,k.Damage,k.round_hp)
     def create_board_for_battle(self):
         # process list   
         for elemnt in ["0","1","2","3","4","5","6"]:
@@ -458,6 +466,23 @@ class Unit_store:
     def freeze(self,index):
         # freeze unit
         pass
+    def selling(self,index):
+        print(self.player_units[index],"selling is given this to sell") ## make sure to see things 
+        if isinstance(self.player_units[index],Unit):
+            self.gold= self.gold + 1  
+            print(self.player_units[index].Name,"unit being sold")
+            self.player_units[index].selling = True
+            self.player_units[index].update()
+         
+            self.player_units[index].ability(self.player_units[index],self) 
+            self.player_units[index].activated_flag = True
+            print(len(self.player_units)," len of things before sell")
+            self.player_units.pop(index)
+            print(self.player_units,"player unit checker 200000")
+            self.player_units.insert(index,str(index))
+            print(self.player_units,"player unit checker 200000")
+            print(len(self.player_units),"len of things after sell")                                      
+            
     def amount_units(self):
         temp_num = 0
         for units in self.player_units:
@@ -466,14 +491,16 @@ class Unit_store:
                 temp_num = temp_num +1
 
         return temp_num
+
     def random_n_amount_of_units(self,num_ally):
-        amount_of_targetable_units = self.amount_units()
-        if num_ally >amount_of_targetable_units:
-            num_ally = amount_of_targetable_units
-        list_ally_index = np.random.randint(0,amount_of_targetable_units,num_ally)
+        self.create_targetable_list()
+        
+       
+        
+        list_ally_index = np.random.choice(self.targetable_units, size=num_ally, replace=False)
  
         temp_list = []
-        self.create_targetable_list()
+        
         for k in list_ally_index:
                 
                 temp_list.append(self.targetable_units[k])
@@ -506,17 +533,19 @@ def display_board(board1,board2):
 shop= Unit_store()
 shop.generate_units()
 # shop.reroll()
-shop.edit_shop([["horse",1,1],["otter",1,1],["otter",1,1]])
-shop.read()
+shop.edit_shop([["beaver",1,1],["otter",1,1],["otter",1,1]])
+shop.read_player_units()
 shop.buy(0,1)
 shop.buy(1,4)
-# shop.buy(0,3)
+shop.buy(0,3)
 
-# print("read players units")
-
-board_for_combat = Board(shop.create_board_for_battle())
-board_for_combat.show_order()
-board_for_combat.show_order_display(board_for_combat)
+print("read players units")
+shop.selling(1)
+print("sold the beaver units")
+shop.read_player_units()
+# board_for_combat = Board(shop.create_board_for_battle())
+# board_for_combat.show_order()
+# board_for_combat.show_order_display(board_for_combat)
 # display_board(board_for_combat,board_for_combat)
 # print(dict_of_pets[1]+dict_of_pets[3])
 
