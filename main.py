@@ -1,5 +1,14 @@
 # import tensorflow as tf
 # import random
+
+
+
+### TODO:
+#horse ability
+#Cricket ability 
+#Items
+#Apple
+#Honey 
 from numpy.random import seed
 from numpy.random import randint
 import numpy as np
@@ -57,7 +66,7 @@ def faint_activation(self):
 def skippper(self):
     return False
 def cricket_ability(cricket,player_board):
-    player_board.insert(0,Unit("zombiecircket",1,1))# add it at the start of line
+    player_board.insert(0,Unit("zombiecircket",1,1))# add it at the start of line in combat 
 
 def start_of_battle(self):
     
@@ -65,13 +74,16 @@ def start_of_battle(self):
 def sell_activiation(self):
     print("checking on sell", self.selling)
     return self.selling == True
+def fish_ability(fish,player_board): 
+       for units in player_board.random_n_amount_of_units(2):
 
+        units.perma_buff(fish.level,fish.level) 
 def summon_activation(self):
     pass #WIP
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[otter_ability,"buy"],"beaver":[beaver_ability,"sell"],"pig":[skippper,"none"],"mouse":[otter_ability,"buy"],
-               "fish":[otter_ability,"buy"],"cricket":[otter_ability,"buy"],"horse":[skippper,"buy"]} 
-ability_type_dict= {"faint":faint_activation,"buy":buy_activiation,"start_of_battle":start_of_battle,"sell":sell_activiation,"summon":summon_activation,"none":skippper,"level_up"}
+               "fish":[fish_ability,"none"],"cricket":[otter_ability,"buy"],"horse":[skippper,"buy"]} 
+ability_type_dict= {"faint":faint_activation,"buy":buy_activiation,"start_of_battle":start_of_battle,"sell":sell_activiation,"summon":summon_activation,"none":skippper,}
 class Unit:
     def __init__(self,Name,Damage,Hp):
         self.Name = Name
@@ -129,9 +141,6 @@ class Unit:
         # print(function(self),"function check")
         
         if function:
-           
-           
-                
                 self.ability_flag= True
 
                 
