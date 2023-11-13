@@ -364,11 +364,14 @@ class Unit_store:
 
     def create_targetable_list(self):
         self.targetable_units =[]
-        for units in self.player_units:
-       
-            if not isinstance(units,str):
-                self.targetable_units.append(units)
+        for units in self.player_units: 
+            print(units,"unit chcker")
             
+            if not isinstance(units,str):
+             
+                self.targetable_units.append(units)
+                print(self.targetable_units,"self adding")
+        print(self.targetable_units,"self targetable finish")
     def edit_shop(self,shop):
         self.temp_shop = []
         self.shop_units =  shop
@@ -494,17 +497,21 @@ class Unit_store:
 
     def random_n_amount_of_units(self,num_ally):
         self.create_targetable_list()
-        
+        print(num_ally,len(self.targetable_units),"num ally and len targetable")
+        if len(self.targetable_units) != 0:
        
+          
         
-        list_ally_index = np.random.choice(self.targetable_units, size=num_ally, replace=False)
+          list_ally_index = np.random.choice(self.targetable_units, size=num_ally, replace=False)
  
-        temp_list = []
+          temp_list = []
         
-        for k in list_ally_index:
+          for k in list_ally_index:
                 
-                temp_list.append(self.targetable_units[k])
-        return temp_list
+                 temp_list.append(k)
+          return temp_list
+        else:
+          return []
 def display_board(board1,board2):
     # while add loops here for gods sake 
 
