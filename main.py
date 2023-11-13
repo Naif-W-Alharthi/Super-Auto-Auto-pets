@@ -54,8 +54,10 @@ def buy_activiation(self):
 def faint_activation(self):
     return not self.alive_check()
     
-def skippper(self,temp):
+def skippper(self):
     return False
+def cricket_ability(cricket,player_board):
+    player_board.insert(0,Unit("zombiecircket",1,1))# add it at the start of line
 
 def start_of_battle(self):
     
@@ -63,10 +65,13 @@ def start_of_battle(self):
 def sell_activiation(self):
     print("checking on sell", self.selling)
     return self.selling == True
+
+def summon_activation(self):
+    pass #WIP
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
-               "duck":[otter_ability,"buy"],"beaver":[beaver_ability,"sell"],"pig":[otter_ability,"buy"],"mouse":[otter_ability,"buy"],
+               "duck":[otter_ability,"buy"],"beaver":[beaver_ability,"sell"],"pig":[skippper,"none"],"mouse":[otter_ability,"buy"],
                "fish":[otter_ability,"buy"],"cricket":[otter_ability,"buy"],"horse":[skippper,"buy"]} 
-ability_type_dict= {"faint":faint_activation,"buy":buy_activiation,"start_of_battle":start_of_battle,"sell":sell_activiation}
+ability_type_dict= {"faint":faint_activation,"buy":buy_activiation,"start_of_battle":start_of_battle,"sell":sell_activiation,"summon":summon_activation,"none":skippper,"level_up"}
 class Unit:
     def __init__(self,Name,Damage,Hp):
         self.Name = Name
@@ -153,7 +158,11 @@ class Board:
             unit.owner_board = self
     def add_unit(self,unit):
         self.start_order= self.start_order.append(unit)
-    
+    def summon(self,unit):
+        self.order.append(0,unit)
+        for k in self.order(): 
+            if ability_dict[k.Name][1]== "summon":# trying to activate all simmon ability and give them a target of the summoned unit 
+                print()
     def show_order(self):
         # for position,units in enumerate(self.order[::-1]):
         #     self.order.append(units)
