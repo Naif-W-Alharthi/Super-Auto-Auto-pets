@@ -488,6 +488,7 @@ class Unit_store:
         # freeze unit
         pass
     def selling(self,index):
+        # sold units get a free pass and quickly get their abilities activated rather than having to call the long ability process.
         print(self.player_units[index],"selling is given this to sell") ## make sure to see things 
         if isinstance(self.player_units[index],Unit):
             self.gold= self.gold + 1  
@@ -530,6 +531,70 @@ class Unit_store:
           return temp_list
         else:
           return []
+class Item_shop:
+    ## add freezing, refreshing, generating 
+    def __init__(self,unit_store):
+        self.linked_shop = unit_store
+        
+        self.turn = unit_store.turn # might cause issues 
+        self.item_pool = np.array([])
+        self.item_list=list()
+        self.amount_of_items = 2 
+        self.add_item_pool()
+        self.temp_shop = []
+  
+    def increase_turn(self):
+        self.turn=self.turn+1
+        if self.turn ==5 or self.turn == 9:
+            self.amount_of_items = self.amount_of_items+1
+        if self.turn in [3,7,9,11]:
+            self.add_item_pool()
+
+    def add_item_pool(self):
+        self.item_pool=  np.concatenate((self.item_pool,dict_of_items[self.turn]))
+        
+    def generate_items(self):
+        generated_units = np.random.randint((self.turn-1//2)*10,size=self.amount_of_items)
+        self.temp_shop = []
+        
+        
+        self.item_list=self.item_pool[generated_units]
+       
+        for unit in self.shop_units:                      
+            
+            new_unit = dict_of_pets_with_stats[unit]
+          
+            
+            # self.shop_units = np.insert(self.player_units,index,new_unit)
+            
+            self.temp_shop.append(new_unit)
+           
+            # self.shop_units= np.delete(self.shop_units,index)
+            # np.delete(self.shop_units,index)
+            # self.player_units = np.insert(self.player_units,index,new_unit)
+        self.shop_units = copy.deepcopy(self.temp_shop)
+        self.temp_shop=[]#empty to avoid memory issues 
+
+    def reroll(self):
+        ## only called from it's parent shop (hopefully)
+        if self.gold >0:
+
+            self.generate_items()
+            
+        else:
+            print(self.gold)
+
+dict_of_items_ability = {}
+dict_of_items_types= {} 
+
+class Item: # becareful there are many types of abiltiies from buffs to reducing damage once 
+    def __init__(self,name):
+        self.name = name
+        self.ability = dict_of_items_ability[name]
+        self.type =  dict_of_items_types[name]
+        
+
+        
 def display_board(board1,board2):
     # while add loops here for gods sake 
 
