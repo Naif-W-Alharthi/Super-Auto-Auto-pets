@@ -18,7 +18,12 @@ class match_env:
         pass
     #turn is something adding up as a count 
 
+def apple_ability(target,owener_board):
+        ## Needs testing
+        owener_board[target].perma_buff(1,1)
 
+        
+        print("apple ability worked")
 def otter_ability(otter,shop_board):
 
     for k in shop_board.random_n_amount_of_units(otter.level):
