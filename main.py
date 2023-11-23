@@ -9,6 +9,7 @@
 #Items
 #Apple
 #Honey 
+#level up
 from numpy.random import seed
 from numpy.random import randint
 import numpy as np
@@ -111,6 +112,8 @@ class Unit:
         self.bought =False
 
 
+    def increase_level(self):
+        self.level
 
     def update(self):
         # update only makes the ability in que be ware of this
@@ -496,7 +499,7 @@ class Unit_store:
         if isinstance(self.player_units[index],Unit):
             if self.player_units[index].Name == "pig": ## or RAT to add a free apple for user 
                 self.gold= self.gold + self.player_units[index].level
-            self.gold= self.gold + 1  
+            self.gold= self.gold + self.player_units[index].level  
             print(self.player_units[index].Name,"unit being sold")
        
        
