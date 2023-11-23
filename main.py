@@ -68,7 +68,7 @@ def buy_activiation(self):
 def faint_activation(self):
     return not self.alive_check()
     
-def skippper(self):
+def skippper(self= None,skipper = None):
     return False
 def cricket_ability(cricket,player_board):
     player_board.insert(0,Unit("zombiecircket",1,1))# add it at the start of line in combat 
@@ -76,9 +76,7 @@ def cricket_ability(cricket,player_board):
 def start_of_battle(self):
     
     return  self.owner_board.state == "start_of_battle"
-def sell_activiation(self):
-    print("checking on sell", self.selling)
-    return self.selling == True
+
 def fish_ability(fish,player_board): 
        for units in player_board.random_n_amount_of_units(2):
 
@@ -111,13 +109,13 @@ class Unit:
         self.ability_limit=0
         self.ability_flag=False
         self.bought =False
-        self.selling = False
+
 
 
     def update(self):
         # update only makes the ability in que be ware of this
         #another object has to force the ability to activate 
-      
+        
         self.activation_condition(self.ability_condtion_func(self))
     def attack(self,enemy):
         enemy.round_hp = enemy.round_hp - self.Damage
@@ -496,13 +494,14 @@ class Unit_store:
         # sold units get a free pass and quickly get their abilities activated rather than having to call the long ability process.
         print(self.player_units[index],"selling is given this to sell") ## make sure to see things 
         if isinstance(self.player_units[index],Unit):
+            if self.player_units[index].Name == "pig": ## or RAT to add a free apple for user 
+                self.gold= self.gold + self.player_units[index].level
             self.gold= self.gold + 1  
             print(self.player_units[index].Name,"unit being sold")
-            self.player_units[index].selling = True
-            self.player_units[index].update()
+       
+       
          
-            self.player_units[index].ability(self.player_units[index],self) 
-            self.player_units[index].activated_flag = True
+           
             print(len(self.player_units)," len of things before sell")
             self.player_units.pop(index)
             print(self.player_units,"player unit checker 200000")
@@ -518,7 +517,8 @@ class Unit_store:
                 temp_num = temp_num +1
 
         return temp_num
-
+    def gold_check(self):
+        print(f"player gold is : {self.gold}")
     def random_n_amount_of_units(self,num_ally):
         self.create_targetable_list()
         print(num_ally,len(self.targetable_units),"num ally and len targetable")
@@ -628,14 +628,15 @@ def display_board(board1,board2):
 shop= Unit_store()
 shop.generate_units()
 # shop.reroll()
-shop.edit_shop([["beaver",1,1],["otter",1,1],["otter",1,1]])
+shop.edit_shop([["pig",1,1],["otter",1,1],["otter",1,1]])
 shop.read_player_units()
 shop.buy(0,1)
-shop.buy(1,4)
-shop.buy(0,3)
+
 
 print("read players units")
+shop.gold_check()
 shop.selling(1)
+shop.gold_check()
 print("sold the beaver units")
 shop.read_player_units()
 # board_for_combat = Board(shop.create_board_for_battle())
