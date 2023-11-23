@@ -10,6 +10,7 @@
 #Apple
 #Honey 
 #level up
+#convert rat and pig to beaver function
 from numpy.random import seed
 from numpy.random import randint
 import numpy as np
@@ -383,6 +384,7 @@ class Unit_store:
         self.add_unitpool()
         self.temp_shop = []
         self.targetable_units =[]
+        self.freeze_list = []
     def increase_turn(self):
         self.turn=self.turn+1
         if self.turn ==5 or self.turn == 9:
@@ -418,10 +420,11 @@ class Unit_store:
         self.shop_units = copy.deepcopy(self.temp_shop)
         self.temp_shop = []
     def generate_units(self):
-        generated_units = np.random.randint((self.turn-1//2)*10,size=self.amount_of_units)
+        generated_units = np.random.randint((self.turn-1//2)*10,size=self.amount_of_units-len(self.freeze_list))
         self.temp_shop = []
         
         
+
         self.shop_units=self.units_pool[generated_units]
        
         for unit in self.shop_units:                      
@@ -437,6 +440,9 @@ class Unit_store:
             # np.delete(self.shop_units,index)
             # self.player_units = np.insert(self.player_units,index,new_unit)
         self.shop_units = copy.deepcopy(self.temp_shop)
+        for units in self.freeze_list:
+            self.shop_units.append(units)
+        
         self.temp_shop=[]#empty to avoid memory issues 
    
 
@@ -494,9 +500,8 @@ class Unit_store:
             print(k.Name)           
             k.bought = False
         return self.player_units
-    def freeze(self,index):
-        # freeze unit
-        pass
+    def shop_units(self):
+        print(self.shop_units)
     def selling(self,index):
         # sold units get a free pass and quickly get their abilities activated rather than having to call the long ability process.
         print(self.player_units[index],"selling is given this to sell") ## make sure to see things 
@@ -519,7 +524,16 @@ class Unit_store:
             self.player_units.insert(index,str(index))
             print(self.player_units,"player unit checker 200000")
             print(len(self.player_units),"len of things after sell")                                      
-            
+    def freeze(self,index):
+        self.freeze_list.append(self.shop_units[index])      
+       
+    def unfreeze(self,index):
+      
+        if index <= len(self.freeze_list):
+            self.freeze_list.pop(index)
+          
+        else:
+            print("can't unfreeze anything")
     def amount_units(self):
         temp_num = 0
         for units in self.player_units:
@@ -639,16 +653,20 @@ def display_board(board1,board2):
 shop= Unit_store()
 shop.generate_units()
 # shop.reroll()
-shop.edit_shop([["pig",1,1],["otter",1,1],["otter",1,1]])
+shop.edit_shop([["pig",1,1],["pig",1,1],["pig",1,1]])
 shop.read_player_units()
+
+shop.reroll()
 shop.buy(0,1)
+shop.buy(1,4)
+shop.buy(0,3)
 
 
 print("read players units")
-shop.gold_check()
-shop.selling(1)
-shop.gold_check()
-print("sold the beaver units")
+
+# shop.selling(1)
+
+# print("sold the beaver units")
 shop.read_player_units()
 # board_for_combat = Board(shop.create_board_for_battle())
 # board_for_combat.show_order()
