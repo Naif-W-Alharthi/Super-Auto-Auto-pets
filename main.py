@@ -74,6 +74,10 @@ def skippper(self= None,skipper = None):
 def cricket_ability(cricket,player_board):
     player_board.insert(0,Unit("zombiecircket",1,1))# add it at the start of line in combat 
 
+def sell_activiation(self):
+    print("checking on sell", self.selling)
+    return self.selling == True
+
 def start_of_battle(self):
     
     return  self.owner_board.state == "start_of_battle"
@@ -110,7 +114,7 @@ class Unit:
         self.ability_limit=0
         self.ability_flag=False
         self.bought =False
-
+        self.selling = False
 
     def increase_level(self):
         self.level
@@ -501,7 +505,11 @@ class Unit_store:
                 self.gold= self.gold + self.player_units[index].level
             self.gold= self.gold + self.player_units[index].level  
             print(self.player_units[index].Name,"unit being sold")
-       
+            self.player_units[index].selling = True
+            self.player_units[index].update()
+         
+            self.player_units[index].ability(self.player_units[index],self) 
+            self.player_units[index].activated_flag = True
        
          
            
