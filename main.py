@@ -89,6 +89,8 @@ def fish_ability(fish,player_board):
         units.perma_buff(fish.level,fish.level) 
 def summon_activation(self):
     pass #WIP
+## has a list of summoned units that are check by the horse and are buffed by the horse 
+
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[otter_ability,"buy"],"beaver":[beaver_ability,"sell"],"pig":[skippper,"none"],"mouse":[otter_ability,"buy"],
                "fish":[fish_ability,"none"],"cricket":[otter_ability,"buy"],"horse":[skippper,"buy"]} 
