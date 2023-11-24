@@ -159,8 +159,6 @@ class Unit:
         
         if function:
                 self.ability_flag= True
-           
-                self.activated_flag = True
 
                 
 
@@ -279,7 +277,7 @@ class Board:
             if units.ability_flag == True:
                 units.ability(units,self)
 
-                # units.activated_flag = True ### IF THIS STOP WORKING OR WORKING MORE THAN ONCE DURING COMBAT CHECK THIS ONE (CHECKME)
+                units.activated_flag = True
                 print(units.Name,"ABILITY FOR THE UNIT HAVE USE222")  
     def update_board_level_1(self):
         ###first surface level check
@@ -466,8 +464,8 @@ class Unit_store:
             self.shop_units[index].bought = True
             self.shop_units[index].update()
    
-            # self.shop_units[index].ability(self.shop_units[index],self) 
-            # self.shop_units[index].activated_flag = True
+            self.shop_units[index].ability(self.shop_units[index],self) 
+            self.shop_units[index].activated_flag = True
            
             
                 
