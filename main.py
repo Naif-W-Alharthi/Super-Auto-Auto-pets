@@ -50,9 +50,12 @@ def ant_ability(self,owner_board=None):
         self.owner_board.random_single_unit().temp_buff(buff_amount,buff_amount)
         
 
-
+def rat_ability(self,shop_board):
+    shop_board.append()
 def duck_ability(duck,shop_board):
-    pass
+    for unit in shop_board.shop_units:
+        unit.perma_buff(0,duck.level)
+        print("duck buffed" ,unit.Name)
     
 # def board_cleanup(board1,board2):
 #     board1
@@ -77,7 +80,8 @@ def cricket_ability(cricket,player_board):
 
 def sell_activiation(self):
     print("checking on sell", self.selling)
-    return self.selling == True
+    print((self.selling == True)," sell check is ")
+    return (self.selling == True)
 
 def start_of_battle(self):
     
@@ -92,7 +96,7 @@ def summon_activation(self):
 ## has a list of summoned units that are check by the horse and are buffed by the horse 
 
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
-               "duck":[otter_ability,"buy"],"beaver":[beaver_ability,"sell"],"pig":[skippper,"none"],"mouse":[otter_ability,"buy"],
+               "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[skippper,"none"],"mouse":[otter_ability,"buy"],
                "fish":[fish_ability,"none"],"cricket":[otter_ability,"buy"],"horse":[skippper,"buy"]} 
 ability_type_dict= {"faint":faint_activation,"buy":buy_activiation,"start_of_battle":start_of_battle,"sell":sell_activiation,"summon":summon_activation,"none":skippper,}
 class Unit:
@@ -155,6 +159,8 @@ class Unit:
         
         if function:
                 self.ability_flag= True
+           
+                self.activated_flag = True
 
                 
 
@@ -273,7 +279,7 @@ class Board:
             if units.ability_flag == True:
                 units.ability(units,self)
 
-                units.activated_flag = True
+                # units.activated_flag = True ### IF THIS STOP WORKING OR WORKING MORE THAN ONCE DURING COMBAT CHECK THIS ONE (CHECKME)
                 print(units.Name,"ABILITY FOR THE UNIT HAVE USE222")  
     def update_board_level_1(self):
         ###first surface level check
@@ -459,9 +465,9 @@ class Unit_store:
             #bought effects
             self.shop_units[index].bought = True
             self.shop_units[index].update()
-            print(self.shop_units[index],self)
-            self.shop_units[index].ability(self.shop_units[index],self) 
-            self.shop_units[index].activated_flag = True
+   
+            # self.shop_units[index].ability(self.shop_units[index],self) 
+            # self.shop_units[index].activated_flag = True
            
             
                 
@@ -478,11 +484,13 @@ class Unit_store:
         # np.concatenate([a,b], axis=1) 
     def reroll(self):
         if self.gold >0:
-
+            ##TODO Add the sliding affect when the shop clips
             self.generate_units()
             self.gold = self.gold-1
         else:
             print(self.gold)
+
+        
     def read(self):
         for k in self.shop_units:
          
@@ -655,24 +663,26 @@ def display_board(board1,board2):
 shop= Unit_store()
 shop.generate_units()
 # shop.reroll()
-shop.edit_shop([["pig",1,1],["pig",1,1],["pig",1,1]])
+shop.edit_shop([["otter",1,1],["otter",1,1],["otter",1,1]])
 shop.read_player_units()
 
-shop.reroll()
-shop.buy(0,1)
-shop.buy(1,4)
-shop.buy(0,3)
+##buying removes the unit so it doesn't work if we buy in a certain order
 
 
+shop.buy(0,4)
+
+shop.buy(1,2)
+
+shop.buy(0,1)   
 print("read players units")
 
 # shop.selling(1)
 
 # print("sold the beaver units")
 shop.read_player_units()
-# board_for_combat = Board(shop.create_board_for_battle())
-# board_for_combat.show_order()
-# board_for_combat.show_order_display(board_for_combat)
+board_for_combat = Board(shop.create_board_for_battle())
+board_for_combat.show_order()
+board_for_combat.show_order_display(board_for_combat)
 # display_board(board_for_combat,board_for_combat)
 # print(dict_of_pets[1]+dict_of_pets[3])
 
