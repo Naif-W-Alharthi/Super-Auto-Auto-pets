@@ -13,6 +13,7 @@ import unittest
 #Honey 
 #level up
 #convert rat and pig to beaver function
+#check for attack order exactly
 from numpy.random import seed
 from numpy.random import randint
 import numpy as np
@@ -64,7 +65,8 @@ def duck_ability(duck,shop_board):
 ##stack order
 #1)hurt (alive units get pirio)
 #2)faint (by which one dies first) (tie is broken by left to right on player side?)
-#
+
+
 def beaver_ability(beaver,shop_board):
    for k in shop_board.random_n_amount_of_units(2):
 
@@ -146,7 +148,7 @@ class Unit:
     def alive_check(self):
         return self.state =="Alive"
     def perma_buff(self,Damage,Hp):
-        print("perma_buffing")
+        # print("perma_buffing")
         self.round_hp = self.round_hp+Hp
         self.Damage=self.Damage + Damage
     def temp_buff(self,Damage,Hp):
@@ -195,8 +197,9 @@ class Board:
         # for position,units in enumerate(self.order[::-1]):
         #     self.order.append(units)
             # print(position,units.Name, unitsround_hp, units.Damage)
-        print(self.order,"show order")
-        print(self.order[0])
+        # print(self.order,"show order")
+        # print(self.order[0])
+        pass
     
     def amount_units(self):
         return len(self.order)
@@ -411,13 +414,13 @@ class Unit_store:
     def create_targetable_list(self):
         self.targetable_units =[]
         for units in self.player_units: 
-            print(units,"unit chcker")
+            # print(units,"unit chcker")
             
             if not isinstance(units,str):
              
                 self.targetable_units.append(units)
-                print(self.targetable_units,"self adding")
-        print(self.targetable_units,"self targetable finish")
+                # print(self.targetable_units,"self adding")
+        # print(self.targetable_units,"self targetable finish")
     def edit_shop(self,shop):
         self.temp_shop = []
         self.shop_units =  shop
@@ -497,17 +500,16 @@ class Unit_store:
             self.gold = self.gold-1
         else:
             print(self.gold)
-
-        
+ 
     def read(self):
         for k in self.shop_units:
          
                 print(k.Name,k.Damage,k.round_hp)
         # print(self.shop_units,"SHOW READ IS ")
     def read_player_units(self):
-        for k in self.player_units:
+        for ind,k in enumerate(self.player_units):
             if isinstance(k,Unit):
-                print(k.Name,k.Damage,k.round_hp)
+                print(ind,k.Name,k.Damage,k.round_hp)
     def create_board_for_battle(self):
         # process list   
         for elemnt in ["0","1","2","3","4","5","6"]:
@@ -515,7 +517,7 @@ class Unit_store:
                     self.player_units.remove(elemnt)               
 
         for k in self.player_units:
-            print(k.Name)           
+            # print(k.Name)           
             k.bought = False
         return self.player_units
     def shop_units(self):
@@ -544,7 +546,6 @@ class Unit_store:
             print(len(self.player_units),"len of things after sell")                                      
     def freeze(self,index):
         self.freeze_list.append(self.shop_units[index])      
-       
     def unfreeze(self,index):
       
         if index <= len(self.freeze_list):
@@ -564,7 +565,7 @@ class Unit_store:
         print(f"player gold is : {self.gold}")
     def random_n_amount_of_units(self,num_ally):
         self.create_targetable_list()
-        print(num_ally,len(self.targetable_units),"num ally and len targetable")
+        # print(num_ally,len(self.targetable_units),"num ally and len targetable")
         if len(self.targetable_units) != 0:
        
           
@@ -636,10 +637,18 @@ dict_of_items_ability = {}
 dict_of_items_types= {} 
 
 class Item: # becareful there are many types of abiltiies from buffs to reducing damage once 
+    ## link to the player unit board
     def __init__(self,name):
         self.name = name
         self.ability = dict_of_items_ability[name]
         self.type =  dict_of_items_types[name]
+        self.cost = 3
+    def change_cost(self,new_cost):
+        self.cost = new_cost
+
+    def use_ability(self,target):
+        self.ability(shop_board[target])
+    
         
 
         
@@ -668,29 +677,29 @@ def display_board(board1,board2):
     # board2.show_order_display()
     
 
-# shop= Unit_store()
-# shop.generate_units()
-# # shop.reroll()
-# shop.edit_shop([["otter",1,1],["otter",1,1],["otter",1,1]])
-# shop.read_player_units()
+shop= Unit_store()
+shop.generate_units()
+# shop.reroll()
+shop.edit_shop([["otter",1,1],["otter",1,1],["otter",1,1]])
+shop.read_player_units()
 
-# ##buying removes the unit so it doesn't work if we buy in a certain order
+##buying removes the unit so it doesn't work if we buy in a certain order
 
 
-# shop.buy(0,4)
+shop.buy(0,4)
 
-# shop.buy(1,2)
+shop.buy(1,2)
 
-# shop.buy(0,1)   
+shop.buy(0,1)   
 # print("read players units")
 
-# # shop.selling(1)
+# shop.selling(1)
 
-# # print("sold the beaver units")
-# shop.read_player_units()
-# board_for_combat = Board(shop.create_board_for_battle())
-# board_for_combat.show_order()
-# print(board_for_combat.total_of_hp_and_damage(),"HP and Damage")
+# print("sold the beaver units")
+shop.read_player_units()
+board_for_combat = Board(shop.create_board_for_battle())
+board_for_combat.show_order()
+print(board_for_combat.total_of_hp_and_damage(),"HP and Damage")
 
 
 
