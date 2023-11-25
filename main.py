@@ -2,6 +2,7 @@
 # import random
 
 
+import unittest
 
 ### TODO:
 #horse ability
@@ -205,6 +206,14 @@ class Board:
         self.order = [x for x in self.order if  x.alive_check()]
     
         # print(self.order[0].alive_check())
+    def total_of_hp_and_damage(self):
+        total_hp =0 
+        total_damage = 0
+        for unit in self.order:
+            # print(unit.__dir__())
+            total_hp =  total_hp +unit.round_hp 
+            total_damage =  total_damage +unit.Damage
+        return [total_damage,total_hp]
 
     def show_order_display(self,other_board = None):
         
@@ -659,29 +668,68 @@ def display_board(board1,board2):
     # board2.show_order_display()
     
 
-shop= Unit_store()
-shop.generate_units()
-# shop.reroll()
-shop.edit_shop([["otter",1,1],["otter",1,1],["otter",1,1]])
-shop.read_player_units()
+# shop= Unit_store()
+# shop.generate_units()
+# # shop.reroll()
+# shop.edit_shop([["otter",1,1],["otter",1,1],["otter",1,1]])
+# shop.read_player_units()
+
+# ##buying removes the unit so it doesn't work if we buy in a certain order
+
+
+# shop.buy(0,4)
+
+# shop.buy(1,2)
+
+# shop.buy(0,1)   
+# print("read players units")
+
+# # shop.selling(1)
+
+# # print("sold the beaver units")
+# shop.read_player_units()
+# board_for_combat = Board(shop.create_board_for_battle())
+# board_for_combat.show_order()
+# print(board_for_combat.total_of_hp_and_damage(),"HP and Damage")
+
+
+
+
+
+
+# shop= Unit_store()
+# shop.generate_units()
+# # shop.reroll()
+# shop.edit_shop([["otter",1,1],["otter",1,1],["otter",1,1]])
+# shop.read_player_units()
 
 ##buying removes the unit so it doesn't work if we buy in a certain order
 
+class CustomTests(unittest.TestCase):
+    def test_otter_ability(self):
+        shop= Unit_store()
+        shop.generate_units()
+        # shop.reroll()
+        shop.edit_shop([["otter",1,1],["otter",1,1],["otter",1,1]])
+        shop.buy(0,4)
 
-shop.buy(0,4)
+        shop.buy(1,2)
 
-shop.buy(1,2)
+        shop.buy(0,1)   
+        # print("read players units")
 
-shop.buy(0,1)   
-print("read players units")
+        # shop.selling(1)
 
-# shop.selling(1)
+        # print("sold the beaver units")
+        # shop.read_player_units()
+        board_for_combat = Board(shop.create_board_for_battle())
+        # board_for_combat.show_order()
+        
+        self.assertEqual(board_for_combat.total_of_hp_and_damage(),[3,5],"Otter test failed")
 
-# print("sold the beaver units")
-shop.read_player_units()
-board_for_combat = Board(shop.create_board_for_battle())
-board_for_combat.show_order()
-board_for_combat.show_order_display(board_for_combat)
+unittest.main()
+
+# board_for_combat.show_order_display(board_for_combat)
 # display_board(board_for_combat,board_for_combat)
 # print(dict_of_pets[1]+dict_of_pets[3])
 
