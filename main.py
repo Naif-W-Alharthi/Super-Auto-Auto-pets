@@ -18,6 +18,7 @@ from numpy.random import seed
 from numpy.random import randint
 import numpy as np
 import copy 
+from pet_abilties import *
 class match_env:
     def __init__(self):
         pass
@@ -29,36 +30,7 @@ def apple_ability(target,owener_board):
 
         
         print("apple ability worked")
-def otter_ability(otter,shop_board):
 
-    for k in shop_board.random_n_amount_of_units(otter.level):
-
-        k.perma_buff(0,1) 
-        print("otter ability worked")
-    ##when bought give random ally +1*lvl hp 
-    
-def mosquito_ability(self,owner_board):
-
-  
-        target_unit =owner_board.enemy_board.random_single_unit()
-        target_unit.take_damage(self.level)
-        print(target_unit.Name, "took damage mosquito ")
-        owner_board.enemy_board.remove_fainted_list()
-        owner_board.remove_fainted_list()
-    
-
-def ant_ability(self,owner_board=None):
-   
-        buff_amount = self.level
-        self.owner_board.random_single_unit().temp_buff(buff_amount,buff_amount)
-        
-
-def rat_ability(self,shop_board):
-    shop_board.append()
-def duck_ability(duck,shop_board):
-    for unit in shop_board.shop_units:
-        unit.perma_buff(0,duck.level)
-        print("duck buffed" ,unit.Name)
     
 # def board_cleanup(board1,board2):
 #     board1
@@ -67,11 +39,7 @@ def duck_ability(duck,shop_board):
 #2)faint (by which one dies first) (tie is broken by left to right on player side?)
 
 
-def beaver_ability(beaver,shop_board):
-   for k in shop_board.random_n_amount_of_units(2):
 
-        k.perma_buff(beaver.level,0) 
-   print("beaver ability stuff")
 def buy_activiation(self):
     return self.bought
 def faint_activation(self):
@@ -79,8 +47,7 @@ def faint_activation(self):
     
 def skippper(self= None,skipper = None):
     return False
-def cricket_ability(cricket,player_board):
-    player_board.insert(0,Unit("zombiecircket",1,1))# add it at the start of line in combat 
+
 
 def sell_activiation(self):
     print("checking on sell", self.selling)
@@ -91,10 +58,8 @@ def start_of_battle(self):
     
     return  self.owner_board.state == "start_of_battle"
 
-def fish_ability(fish,player_board): 
-       for units in player_board.random_n_amount_of_units(2):
-
-        units.perma_buff(fish.level,fish.level) 
+def level_up_activataction(self):
+    pass # WIP
 def summon_activation(self):
     pass #WIP
 ## has a list of summoned units that are check by the horse and are buffed by the horse 
@@ -126,7 +91,7 @@ class Unit:
         self.ability_flag=False
         self.bought =False
         self.selling = False
-
+        self.state = None
     def increase_level(self):
         self.level
 
@@ -700,7 +665,7 @@ shop.read_player_units()
 board_for_combat = Board(shop.create_board_for_battle())
 board_for_combat.show_order()
 print(board_for_combat.total_of_hp_and_damage(),"HP and Damage")
-
+# display_board(board_for_combat,board_for_combat)
 
 
 
