@@ -18,7 +18,7 @@ from numpy.random import seed
 from numpy.random import randint
 import numpy as np
 import copy 
-from pet_abilties import *
+# from pet_abilties import *
 class match_env:
     def __init__(self):
         pass
@@ -39,7 +39,51 @@ def apple_ability(target,owener_board):
 #2)faint (by which one dies first) (tie is broken by left to right on player side?)
 
 
+def otter_ability(otter,shop_board):
 
+    for k in shop_board.random_n_amount_of_units(otter.level):
+
+        k.perma_buff(0,1) 
+        print("otter ability worked")
+    ##when bought give random ally +1*lvl hp 
+    
+def mosquito_ability(self,owner_board):
+
+  
+        target_unit =owner_board.enemy_board.random_single_unit()
+        target_unit.take_damage(self.level)
+        print(target_unit.Name, "took damage mosquito ")
+        owner_board.enemy_board.remove_fainted_list()
+        owner_board.remove_fainted_list()
+    
+
+def ant_ability(self,owner_board=None):
+   
+        buff_amount = self.level
+        self.owner_board.random_single_unit().temp_buff(buff_amount,buff_amount)
+        
+
+def rat_ability(self,shop_board):
+    shop_board.append()
+def duck_ability(duck,shop_board):
+    for unit in shop_board.shop_units:
+        unit.perma_buff(0,duck.level)
+        print("duck buffed" ,unit.Name)
+
+
+def beaver_ability(beaver,shop_board):
+   for k in shop_board.random_n_amount_of_units(2):
+
+        k.perma_buff(beaver.level,0) 
+   
+def cricket_ability(cricket,player_board):
+    player_board.insert(0,Unit("zombiecircket",1,1))# add it at the start of line in combat 
+
+def fish_ability(fish,player_board): 
+       for units in player_board.random_n_amount_of_units(2):
+
+        units.perma_buff(fish.level,fish.level)  
+    
 def buy_activiation(self):
     return self.bought
 def faint_activation(self):
@@ -91,15 +135,17 @@ class Unit:
         self.ability_flag=False
         self.bought =False
         self.selling = False
-        self.state = None
+        self.current_status_f = None
+
     def increase_level(self):
-        self.level
+        self.level 
 
     def update(self):
         # update only makes the ability in que be ware of this
         #another object has to force the ability to activate 
         
-        self.activation_condition(self.ability_condtion_func(self))
+        if (self.state==activation_condition):
+            use ability
     def attack(self,enemy):
         enemy.round_hp = enemy.round_hp - self.Damage
         self.round_hp = self.round_hp - enemy.Damage
@@ -117,7 +163,7 @@ class Unit:
         self.round_hp = self.round_hp+Hp
         self.Damage=self.Damage + Damage
     def temp_buff(self,Damage,Hp):
-        print(Hp,Damage,"temp buff")
+        # print(Hp,Damage,"temp buff")
         self.round_hp = self.round_hp+Hp
         self.Damage=self.Damage + Damage
         self.temp_buff_hp = self.temp_buff_hp+ Hp

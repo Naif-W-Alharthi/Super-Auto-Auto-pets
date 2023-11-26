@@ -1,6 +1,6 @@
 
-
-from main import Unit # add more as time goes on    
+#circular impor issue 
+# from main import Unit # add more as time goes on    
 
 def otter_ability(otter,shop_board):
 
@@ -45,4 +45,4 @@ def cricket_ability(cricket,player_board):
 def fish_ability(fish,player_board): 
        for units in player_board.random_n_amount_of_units(2):
 
-        units.perma_buff(fish.level,fish.level) 
+        units.perma_buff(fish.level,fish.level)  
