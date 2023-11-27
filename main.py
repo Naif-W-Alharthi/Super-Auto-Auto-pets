@@ -14,6 +14,7 @@ import unittest
 #level up
 #convert rat and pig to beaver function
 #check for attack order exactly
+#convert units in a dictonary of abilties to states and see if that state in the lookup table 
 from numpy.random import seed
 from numpy.random import randint
 import numpy as np
@@ -130,22 +131,25 @@ class Unit:
         self.temp_buff_damage= 0
         self.activated_flag = False
         self.owner_board = None
-        self.ability_condtion_func = ability_type_dict[ability_dict[Name][1]]
+        self.ablity_game_state = ability_dict[Name][1]
         self.ability_limit=0
         self.ability_flag=False
-        self.bought =False
-        self.selling = False
-        self.current_status_f = None
+      
+        self.unit_game_state = None
 
     def increase_level(self):
-        self.level 
+        self.level  ## WIP
+    
+    def dict_for_activation(self):
+        # save this for when we try to find 
+        return {self.ablity_game_state:self.ability}
 
     def update(self):
         # update only makes the ability in que be ware of this
         #another object has to force the ability to activate 
         
-        if (self.state==activation_condition):
-            use ability
+        if (self.state==self.ablity_game_state):
+            self.ability(self,self.owner_board) ## We must send the board to avoid any issues later on 
     def attack(self,enemy):
         enemy.round_hp = enemy.round_hp - self.Damage
         self.round_hp = self.round_hp - enemy.Damage
@@ -310,7 +314,8 @@ class Board:
 
     def add_unit_attack_q(self,unit):
         pass
-
+    def shop_linking(self,shop):
+        self.shop = shop
     def reset_board(self,board2):
         for units in self.start_order+board2.start_order:
             units.round_end()
