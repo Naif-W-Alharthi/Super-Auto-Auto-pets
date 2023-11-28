@@ -41,7 +41,8 @@ def apple_ability(target,owener_board):
 
 
 def otter_ability(otter,shop_board):
-
+    print(shop_board)
+    print(shop_board.__dir__(),"shop_board")
     for k in shop_board.random_n_amount_of_units(otter.level):
 
         k.perma_buff(0,1) 
@@ -108,7 +109,7 @@ def level_up_activataction(self):
 def summon_activation(self):
     pass #WIP
 ## has a list of summoned units that are check by the horse and are buffed by the horse 
-
+status = ["buy,sell,faint,none,start_of_battle"]
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[skippper,"none"],"mouse":[otter_ability,"buy"],
                "fish":[fish_ability,"none"],"cricket":[otter_ability,"buy"],"horse":[skippper,"buy"]} 
@@ -125,7 +126,7 @@ class Unit:
         self.Tier=1
         self.Sell_price=self.level
         self.perk = None
-        self.state="Alive"
+   
         self.ability=ability_dict[Name][0]
         self.temp_buff_hp = 0
         self.temp_buff_damage= 0
@@ -134,9 +135,12 @@ class Unit:
         self.ablity_game_state = ability_dict[Name][1]
         self.ability_limit=0
         self.ability_flag=False
-      
-        self.unit_game_state = None
+        self.ability_used = False
+        self.state = None
+        self.alive = True
 
+    def update_state(self,state):
+        self.state = state
     def increase_level(self):
         self.level  ## WIP
     
@@ -147,21 +151,25 @@ class Unit:
     def update(self):
         # update only makes the ability in que be ware of this
         #another object has to force the ability to activate 
-        
-        if (self.state==self.ablity_game_state):
+        print("update in progress")
+        print(self.state)
+        print(self.ablity_game_state,self.state)
+        if (self.state==self.ablity_game_state) and not self.ability_used:
             self.ability(self,self.owner_board) ## We must send the board to avoid any issues later on 
+            self.ability_used = True
+            print("update worked")
     def attack(self,enemy):
         enemy.round_hp = enemy.round_hp - self.Damage
         self.round_hp = self.round_hp - enemy.Damage
         print(self.Name, " attacked ",enemy.Name )
         print(enemy.Name, " attacked ",self.Name )
         if enemy.round_hp <= 0:
-            enemy.state="Faint"
+            enemy.alive = False
         if self.round_hp <= 0:
-            self.state="Faint"
+            self.alive = False
 
     def alive_check(self):
-        return self.state =="Alive"
+        return self.alive
     def perma_buff(self,Damage,Hp):
         # print("perma_buffing")
         self.round_hp = self.round_hp+Hp
@@ -182,7 +190,7 @@ class Unit:
                 
 
     def round_end(self):
-        self.state = "Alive"
+        self.alive = True
         self.activated_flag = False
         self.round_hp=self.base_Hp
         self.Damage=self.Damage-self.temp_buff_damage
@@ -195,7 +203,8 @@ class Board:
     def __init__(self,units):
         self.order = []
         self.start_order = []
-        self.state= None
+        self.board_state= None
+        self.alive = True
         self.enemy_board = None
         for unit in units:
             self.order.append(unit)
@@ -324,11 +333,11 @@ class Board:
     def fainted(self):
         print( [x for x in self.start_order if not x.alive_check()])
     def start_board(self,board2):
-        self.state = "start_of_battle"
-        board2.state = "start_of_battle"
+        self.board_state = "start_of_battle"
+        board2.board_state = "start_of_battle"
     def mid_battle_state(self,board2):
-        self.state = "mid_battle"
-        board2.state = "mid_battle"
+        self.board_state = "mid_battle"
+        board2.board_state = "mid_battle"
     def enemy_board_linking(self,board2):
         self.enemy_board =board2
         board2.enemy_board = self
@@ -420,6 +429,7 @@ class Unit_store:
         self.temp_shop = []
         self.targetable_units =[]
         self.freeze_list = []
+        self.board = None
     def increase_turn(self):
         self.turn=self.turn+1
         if self.turn ==5 or self.turn == 9:
@@ -490,11 +500,12 @@ class Unit_store:
             
 
             #bought effects
-            self.shop_units[index].bought = True
+            # self.shop_units[index].bought = True
+            self.shop_units[index].update_state("buy")
             self.shop_units[index].update()
    
-            self.shop_units[index].ability(self.shop_units[index],self) 
-            self.shop_units[index].activated_flag = True
+            # self.shop_units[index].ability(self.shop_units[index],self) 
+            # self.shop_units[index].activated_flag = True
            
             
                 
