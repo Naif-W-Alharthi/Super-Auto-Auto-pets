@@ -180,12 +180,12 @@ class Unit:
         self.Damage=self.Damage + Damage
         self.temp_buff_hp = self.temp_buff_hp+ Hp
         self.temp_buff_damage=self.temp_buff_damage +Damage
-    def activation_condition(self,function):
-        # print(self.Name)
-        # print(function(self),"function check")
+    # def activation_condition(self,function):
+    #     # print(self.Name)
+    #     # print(function(self),"function check")
         
-        if function:
-                self.ability_flag= True
+    #     if function:
+    #             self.ability_flag= True
 
                 
 
@@ -199,6 +199,8 @@ class Unit:
 
     def take_damage(self,damage_amount):
         self.round_hp= self.round_hp -damage_amount
+        if self.round_hp <= 0:
+            self.alive = False
 class Board:
     def __init__(self):
         self.order = []
@@ -208,12 +210,9 @@ class Board:
         self.enemy_board = None
         self.shop = None
         self.targetable_units =[]
-        self.player_units= ["0","1","2","3","4","5","6"]##player units 
-        # for unit in units:
-        #     self.order.append(unit)
-        #     self.start_order.append(unit)
-        #     unit.owner_board = self
-
+        self.player_units= ["0","1","2","3","4"]##player units 
+  
+        self.position_unit_dict = {0:None,1:None,2:None,3:None,4:None}
 
     def add_unit(self,unit):
         self.start_order= self.start_order.append(unit)
@@ -234,18 +233,19 @@ class Board:
         return len(self.order)
     def remove_fainted_list(self):
        
-        
+       
         self.order = [x for x in self.order if  x.alive_check()]
-    
+
         # print(self.order[0].alive_check())
     def total_of_hp_and_damage(self):
         total_hp =0 
         total_damage = 0
         self.create_targetable_list()
         for unit in self.targetable_units:
+            print
             # print(unit.__dir__())
             total_hp =  total_hp +unit.round_hp 
-            total_damage =  total_damage +unit.Damage
+            total_damage =  total_damage +unit.Damage ####### nOOOOOOOOOOOOOOOOOOOOOOOOOOOOONnnnnnnnnnnnnnnnnnnnnnnnn
         return [total_damage,total_hp]
 
     def show_order_display(self,other_board = None):
@@ -320,7 +320,7 @@ class Board:
           return temp_list
         else:
           return []
-        
+    
     def random_single_unit(self):
 
         list_ally_index = np.random.randint(0,self.amount_units(),1) ## check this if a single random unit is being called and acts funny not using np methods of others 
@@ -328,23 +328,21 @@ class Board:
         return self.order[list_ally_index[0]]
     def update_board(self):
         ###careful of order
-        self.update_board_level_1()
+        
         # print(self.start_order[0].ability_flag,"BASE START ORDER")
-        self.start_order_abilities = [x for x in self.start_order if  x.ability_flag and not x.activated_flag ]
-        print(self.start_order_abilities)
-        for units in self.start_order_abilities:
+        # self.start_order_abilities = [x for x in self.start_order if  x.ability_flag and not x.activated_flag ]
+        #There is an order to abilties but that should be in unit order?
+ 
+        for unit in self.order:
+            unit.update_state("mid_battle")
+            unit.update()
+            
 
-            print(units,"ability and unity",units.ability)
-            if units.ability_flag == True:
-                units.ability(units,self)
 
-                units.activated_flag = True
-                print(units.Name,"ABILITY FOR THE UNIT HAVE USE222")  
-    def update_board_level_1(self):
-        ###first surface level check
-        for units in self.start_order:      
-            units.update()
-
+    def start_of_battle_for_units(self):
+        for unit in self.order:
+            unit.update_state("start_of_battle")
+            unit.update()
     def add_unit_attack_q(self,unit):
         pass
     def shop_linking(self,shop):
@@ -376,80 +374,155 @@ class Board:
     
     def create_board_for_battle(self):
         # process list   
-        for elemnt in ["0","1","2","3","4","5","6"]:
-                if elemnt in self.player_units:
-                    self.player_units.remove(elemnt)               
+        list_for_battle = self.position_unit_dict.values()
+        print(list_for_battle,"list for battle")
+        temp_ = []
+        for elemnt in list_for_battle:
+                if elemnt != None:
+                    temp_.append(elemnt)         
 
-        for k in self.player_units:
-            # print(k.Name)           
-            k.bought = False
-        return self.player_units
-def battle_phase(board1,board2):
+        
+        self.order = temp_
+def battle_phase(board1,board2,round_num = None):
     # print(board1.show_order(),board2.show_order())
     battle_finished = False
     round_count= 0
     # print("board 1")
     board1.show_order_display(board2)
     board1.enemy_board_linking(board2)
+    board1.create_board_for_battle()
+    board2.create_board_for_battle()
+    print(board1.total_of_hp_and_damage(),"total hp limit")
     # print("board 2")
     # board2.show_order_display()
     # battle_phase(board1,board2)
-
-    while not battle_finished:
-        ##pre battle stuff WIP
-        ###
+    if round_num == None:
+        while not battle_finished:
+            ##pre battle stuff WIP
+            ###
+            
+            round_count= 1+round_count
+            #mid attacl
         
-        round_count= 1+round_count
-        #mid attacl
-       
-        print("======================")
-        print("┃                    ┃")
-        print("┃      round  ",round_count,"    ┃")
-        print("┃                    ┃")
-        print("======================")
-        if round_count ==1:
-            print("START THE ROUND")
-            board1.start_board(board2)
+            print("======================")
+            print("┃                    ┃")
+            print("┃      round  ",round_count,"    ┃")
+            print("┃                    ┃")
+            print("======================")
+            
+            if round_count ==1:
+                board1.show_order_display(board2)
+                board1.start_of_battle_for_units()
+                board2.start_of_battle_for_units()
+                print("START THE ROUND")
+                board1.start_board(board2)
+                board1.remove_fainted_list()
+                board2.remove_fainted_list()
+
+
+            else:
+                board1.mid_battle_state(board2)
+            board2.order[0].attack(board1.order[0])
+            board1.update_board()
+            board2.update_board()
+            
+            
+            # board1.update()
+            
+            #post attack
             board1.remove_fainted_list()
             board2.remove_fainted_list()
-        else:
-            board1.mid_battle_state(board2)
-        board2.order[0].attack(board1.order[0])
-        board1.update_board()
-        board2.update_board()
-        
-        
-        # board1.update()
-        
-        #post attack
-        board1.remove_fainted_list()
-        board2.remove_fainted_list()
-        # board1.update_board()
-        # board2.update_board()
-        # results
-        # print(board1.amount_units())
-        # print(board2.amount_units())
-        if board1.amount_units() == 0 and  board2.amount_units()!=0:
-                print("board 2 wins")
-                battle_finished = True
-                board1.show_order_display(board2)
-                # return ("Lost")
-        elif board1.amount_units() != 0 and board2.amount_units()==0:
-                print("board 1 wins")
-                battle_finished = True
-                board1.show_order_display(board2)
-                # return ("Win")
-            
-        elif board1.amount_units() == 0 and board2.amount_units()==0:
-                print("draw")
-                battle_finished = True
+            # board1.update_board()
+            # board2.update_board()
+            # results
+            # print(board1.amount_units())
+            # print(board2.amount_units())
+            if board1.amount_units() == 0 and  board2.amount_units()!=0:
+                    print("board 2 wins")
+                    battle_finished = True
+                    board1.show_order_display(board2)
+                    # return ("Lost")
+            elif board1.amount_units() != 0 and board2.amount_units()==0:
+                    print("board 1 wins")
+                    battle_finished = True
+                    board1.show_order_display(board2)
+                    # return ("Win")
                 
-                # return "draw"
-        else:
+            elif board1.amount_units() == 0 and board2.amount_units()==0:
+                    print("draw")
+                    battle_finished = True
+                    
+                    # return "draw"
+            else:
+                    board1.show_order_display(board2)
+                    continue
+    else:
+         while not battle_finished:
+            ##pre battle stuff WIP
+            ###
+            
+                
+            round_count= 1+round_count
+            #mid attacl
+        
+            print("======================")
+            print("┃                    ┃")
+            print("┃      round  ",round_count,"    ┃")
+            print("┃                    ┃")
+            print("======================")
+            
+            if round_count ==1:
+
                 board1.show_order_display(board2)
-                continue
-        
-        
+                board1.start_of_battle_for_units()
+                board2.start_of_battle_for_units()
+                print("START THE ROUND")
+                board1.start_board(board2)
+                board1.remove_fainted_list()
+                board2.remove_fainted_list()
+                
+                battle_finished = True
+                print(board1.total_of_hp_and_damage(),"total hp limit")
+
+
+            else:
+                board1.mid_battle_state(board2)
+            board2.order[0].attack(board1.order[0])
+            board1.update_board()
+            board2.update_board()
+            
+            
+            # board1.update()
+            
+            #post attack
+            board1.remove_fainted_list()
+            board2.remove_fainted_list()
+            # board1.update_board()
+            # board2.update_board()
+            # results
+            # print(board1.amount_units())
+            # print(board2.amount_units())
+            if board1.amount_units() == 0 and  board2.amount_units()!=0:
+                    print("board 2 wins")
+                    battle_finished = True
+                    board1.show_order_display(board2)
+                    # return ("Lost")
+            elif board1.amount_units() != 0 and board2.amount_units()==0:
+                    print("board 1 wins")
+                    battle_finished = True
+                    board1.show_order_display(board2)
+                    # return ("Win")
+                
+            elif board1.amount_units() == 0 and board2.amount_units()==0:
+                    print("draw")
+                    battle_finished = True
+                    
+                    # return "draw"
+            else:
+                    board1.show_order_display(board2)
+                    continue
+            
+            
     ##
 
     
@@ -547,8 +620,10 @@ class Unit_store:
            
             
                 
-
-            self.board.player_units[place]= self.shop_units[index]
+            if self.board.position_unit_dict[place] == None:
+                self.board.position_unit_dict[place]= self.shop_units[index]
+            else:
+                print("UNIT IS ALREADY IN THAT PLACE")
 
             # np.insert( self.player_units,place,self.shop_units[index]) 
             # print(self.shop_units[index],"shop unit index")
@@ -572,7 +647,7 @@ class Unit_store:
                 print(k.Name,k.Damage,k.round_hp)
         # print(self.shop_units,"SHOW READ IS ")
     def read_player_units(self):
-        for ind,k in enumerate(self.board.player_units):
+        for ind,k in enumerate(self.board.position_unit_dict.values()):
             if isinstance(k,Unit):
                 print(ind,k.Name,k.Damage,k.round_hp)
     def create_board_for_battle(self):
@@ -588,18 +663,18 @@ class Unit_store:
     def shop_units(self):
         print(self.shop_units)
     def selling(self,index):
+        # self.board.player_units
         # sold units get a free pass and quickly get their abilities activated rather than having to call the long ability process.
-        print(self.player_units[index],"selling is given this to sell") ## make sure to see things 
-        if isinstance(self.player_units[index],Unit):
-            if self.player_units[index].Name == "pig": ## or RAT to add a free apple for user 
-                self.gold= self.gold + self.player_units[index].level
-            self.gold= self.gold + self.player_units[index].level  
-            print(self.player_units[index].Name,"unit being sold")
-            self.player_units[index].selling = True
-            self.player_units[index].update()
-         
-            self.player_units[index].ability(self.player_units[index],self) 
-            self.player_units[index].activated_flag = True
+        print(self.board.position_unit_dict.values[index],"selling is given this to sell") ## make sure to see things 
+        if isinstance(self.board.position_unit_dict[index],Unit):
+            if self.board.position_unit_dict[index].Name == "pig": ## just use the normal function
+                self.gold= self.gold + self.board.position_unit_dict[index].level
+            self.gold= self.gold + self.board.position_unit_dict[index].level  
+            print(self.board.position_unit_dict[index].Name,"unit being sold")
+            self.shop_units[index].update_state("buy")
+            self.board.position_unit_dict[index].update()
+        
+    
        
          
            
@@ -701,7 +776,7 @@ class Item: # becareful there are many types of abiltiies from buffs to reducing
         
 
         
-def display_board(board1,board2):
+# def display_board(board1,board2):
     # while add loops here for gods sake 
 
 
@@ -710,8 +785,8 @@ def display_board(board1,board2):
     # board1.show_order_display()
     
     # print("board 2")
-    # board2.show_order_display()
-    battle_phase(board1,board2)
+    # board2.show_order_display()   
+    # battle_phase(board1,board2)
     
    
     # print("======================")
@@ -725,13 +800,15 @@ def display_board(board1,board2):
     # print("board 2")
     # board2.show_order_display()
     
+
+# battle_phase(board1,board2)
 board = Board()
 shop= Unit_store()
 board.shop_linking(shop)
 shop.link_to_board(board)
 shop.generate_units()
 # shop.reroll()
-shop.edit_shop([["otter",1,1],["otter",1,1],["otter",1,1]])
+shop.edit_shop([["pig",1,1],["pig",1,1],["mosqutio",1,1]])
 shop.read_player_units()
 
 ##buying removes the unit so it doesn't work if we buy in a certain order
@@ -739,19 +816,19 @@ shop.read_player_units()
 
 shop.buy(0,4)
 
-shop.buy(1,2)
+shop.buy(1,1)
 
-shop.buy(0,1)   
+shop.buy(0,3)   
 # print("read players units")
 
 # shop.selling(1)
 
 # print("sold the beaver units")
-shop.read_player_units()
+# shop.read_player_units()
 
+battle_phase(board,board,1)
 
-
-# display_board(board_for_combat,board_for_combat)
+# display_board(board,board)
 
 
 
@@ -772,27 +849,30 @@ class CustomTests(unittest.TestCase):
         board.shop_linking(shop)
         shop.link_to_board(board)
         shop.generate_units()
-# shop.reroll()
         shop.edit_shop([["otter",1,1],["otter",1,1],["otter",1,1]])
         shop.read_player_units()
-
-##buying removes the unit so it doesn't work if we buy in a certain order
-
-
         shop.buy(0,4)
-
         shop.buy(1,2)
-
-        shop.buy(0,1)   
-# print("read players units")
-
-# shop.selling(1)
-
-# print("sold the beaver units")
+        shop.buy(0,1)    
         shop.read_player_units()
         self.assertEqual(board.total_of_hp_and_damage(),[3,5],"Otter test failed")
 
-unittest.main() 
+    def test_cricket_ability(self):
+        board = Board()
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+        shop.edit_shop([["pig",1,1],["pig",1,1],["mosqutio",1,1]])
+        shop.read_player_units()
+        shop.buy(0,4)
+        shop.buy(1,2)
+        shop.buy(0,1)    
+        shop.read_player_units()
+        #start combat here ? and take the hp total during round 1?
+        self.assertEqual(board.total_of_hp_and_damage(),[3,2],"Cricket test failed")
+
+# unittest.main() 
 
 # board_for_combat.show_order_display(board_for_combat)
 # display_board(board_for_combat,board_for_combat)
