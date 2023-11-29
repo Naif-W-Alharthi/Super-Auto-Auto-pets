@@ -40,10 +40,10 @@ def apple_ability(target,owener_board):
 #2)faint (by which one dies first) (tie is broken by left to right on player side?)
 
 
-def otter_ability(otter,shop_board):
-    print(shop_board)
-    print(shop_board.__dir__(),"shop_board")
-    for k in shop_board.random_n_amount_of_units(otter.level):
+def otter_ability(otter,owner_board):
+    print(owner_board)
+    print(owner_board.__dir__(),"owner_board")
+    for k in owner_board.random_n_amount_of_units(otter.level):
 
         k.perma_buff(0,1) 
         print("otter ability worked")
@@ -200,16 +200,21 @@ class Unit:
     def take_damage(self,damage_amount):
         self.round_hp= self.round_hp -damage_amount
 class Board:
-    def __init__(self,units):
+    def __init__(self):
         self.order = []
         self.start_order = []
         self.board_state= None
         self.alive = True
         self.enemy_board = None
-        for unit in units:
-            self.order.append(unit)
-            self.start_order.append(unit)
-            unit.owner_board = self
+        self.shop = None
+        self.targetable_units =[]
+        self.player_units= ["0","1","2","3","4","5","6"]##player units 
+        # for unit in units:
+        #     self.order.append(unit)
+        #     self.start_order.append(unit)
+        #     unit.owner_board = self
+
+
     def add_unit(self,unit):
         self.start_order= self.start_order.append(unit)
     def summon(self,unit):
@@ -236,7 +241,8 @@ class Board:
     def total_of_hp_and_damage(self):
         total_hp =0 
         total_damage = 0
-        for unit in self.order:
+        self.create_targetable_list()
+        for unit in self.targetable_units:
             # print(unit.__dir__())
             total_hp =  total_hp +unit.round_hp 
             total_damage =  total_damage +unit.Damage
@@ -287,15 +293,33 @@ class Board:
         print(curr_middle)         
         print(curr_low_middle)
         print(curr_lower)   
-    def random_n_amount_of_units(self,num_ally):
-        amount_of_targetable_allies = self.amount_units()
+    # def random_n_amount_of_units(self,num_ally):
+    #     print("MADE IT TO BOARD RANDOM N AMOUNT OF UNITS")
+    #     amount_of_targetable_allies = self.amount_units()
 
-        list_ally_index = list_ally_index = np.random.choice(amount_of_targetable_allies, size=num_ally, replace=False)
-        print(list_ally_index,"list ally_dindex")
-        temp_list = []
-        for k in list_ally_index:
-                temp_list.append(self.order[k])
-        return temp_list
+    #     list_ally_index = list_ally_index = np.random.choice(amount_of_targetable_allies, size=num_ally, replace=False)
+    #     print(list_ally_index,"list ally_dindex")
+    #     temp_list = []
+    #     for k in list_ally_index:
+    #             temp_list.append(self.order[k])
+    #     return temp_list
+    def random_n_amount_of_units(self,num_ally):
+        self.create_targetable_list()
+        # print(num_ally,len(self.targetable_units),"num ally and len targetable")
+        if len(self.targetable_units) != 0:
+       
+          
+        
+          list_ally_index = np.random.choice(self.targetable_units, size=num_ally, replace=False)
+ 
+          temp_list = []
+        
+          for k in list_ally_index:
+                
+                 temp_list.append(k)
+          return temp_list
+        else:
+          return []
         
     def random_single_unit(self):
 
@@ -341,6 +365,25 @@ class Board:
     def enemy_board_linking(self,board2):
         self.enemy_board =board2
         board2.enemy_board = self
+    def create_targetable_list(self):
+        self.targetable_units =[]
+        for units in self.player_units: 
+            # print(units,"unit chcker")
+            
+            if not isinstance(units,str):
+             
+                self.targetable_units.append(units)
+    
+    def create_board_for_battle(self):
+        # process list   
+        for elemnt in ["0","1","2","3","4","5","6"]:
+                if elemnt in self.player_units:
+                    self.player_units.remove(elemnt)               
+
+        for k in self.player_units:
+            # print(k.Name)           
+            k.bought = False
+        return self.player_units
 def battle_phase(board1,board2):
     # print(board1.show_order(),board2.show_order())
     battle_finished = False
@@ -423,7 +466,7 @@ class Unit_store:
         self.units_pool= np.array([])
         self.turn = 1
         self.gold = 10
-        self.player_units= ["0","1","2","3","4","5","6"]##player units 
+        
         self.shop_units=list()
         self.add_unitpool()
         self.temp_shop = []
@@ -436,15 +479,9 @@ class Unit_store:
             self.amount_of_units = self.amount_of_units+1
         if self.turn in [3,7,9,11]:
             self.add_unitpool()
+    def link_to_board(self,board):
+        self.board = board
 
-    def create_targetable_list(self):
-        self.targetable_units =[]
-        for units in self.player_units: 
-            # print(units,"unit chcker")
-            
-            if not isinstance(units,str):
-             
-                self.targetable_units.append(units)
                 # print(self.targetable_units,"self adding")
         # print(self.targetable_units,"self targetable finish")
     def edit_shop(self,shop):
@@ -502,6 +539,7 @@ class Unit_store:
             #bought effects
             # self.shop_units[index].bought = True
             self.shop_units[index].update_state("buy")
+            self.shop_units[index].owner_board = self.board
             self.shop_units[index].update()
    
             # self.shop_units[index].ability(self.shop_units[index],self) 
@@ -510,12 +548,12 @@ class Unit_store:
             
                 
 
-            self.player_units[place]= self.shop_units[index]
+            self.board.player_units[place]= self.shop_units[index]
 
             # np.insert( self.player_units,place,self.shop_units[index]) 
             # print(self.shop_units[index],"shop unit index")
       
-            self.shop_units= np.delete(self.shop_units,index)
+            self.shop_units= np.delete(self.shop_units,index) 
             # print("bought the ",self.shop_units[0].Name,place,"bought test")
     def add_unitpool(self):
         self.units_pool=  np.concatenate((self.units_pool,dict_of_pets[self.turn]))
@@ -534,7 +572,7 @@ class Unit_store:
                 print(k.Name,k.Damage,k.round_hp)
         # print(self.shop_units,"SHOW READ IS ")
     def read_player_units(self):
-        for ind,k in enumerate(self.player_units):
+        for ind,k in enumerate(self.board.player_units):
             if isinstance(k,Unit):
                 print(ind,k.Name,k.Damage,k.round_hp)
     def create_board_for_battle(self):
@@ -590,23 +628,7 @@ class Unit_store:
         return temp_num
     def gold_check(self):
         print(f"player gold is : {self.gold}")
-    def random_n_amount_of_units(self,num_ally):
-        self.create_targetable_list()
-        # print(num_ally,len(self.targetable_units),"num ally and len targetable")
-        if len(self.targetable_units) != 0:
-       
-          
-        
-          list_ally_index = np.random.choice(self.targetable_units, size=num_ally, replace=False)
- 
-          temp_list = []
-        
-          for k in list_ally_index:
-                
-                 temp_list.append(k)
-          return temp_list
-        else:
-          return []
+    
 class Item_shop:
     ## add freezing, refreshing, generating 
     def __init__(self,unit_store):
@@ -703,8 +725,10 @@ def display_board(board1,board2):
     # print("board 2")
     # board2.show_order_display()
     
-
+board = Board()
 shop= Unit_store()
+board.shop_linking(shop)
+shop.link_to_board(board)
 shop.generate_units()
 # shop.reroll()
 shop.edit_shop([["otter",1,1],["otter",1,1],["otter",1,1]])
@@ -724,9 +748,9 @@ shop.buy(0,1)
 
 # print("sold the beaver units")
 shop.read_player_units()
-board_for_combat = Board(shop.create_board_for_battle())
-board_for_combat.show_order()
-print(board_for_combat.total_of_hp_and_damage(),"HP and Damage")
+
+
+
 # display_board(board_for_combat,board_for_combat)
 
 
@@ -743,27 +767,32 @@ print(board_for_combat.total_of_hp_and_damage(),"HP and Damage")
 
 class CustomTests(unittest.TestCase):
     def test_otter_ability(self):
+        board = Board()
         shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
         shop.generate_units()
-        # shop.reroll()
+# shop.reroll()
         shop.edit_shop([["otter",1,1],["otter",1,1],["otter",1,1]])
+        shop.read_player_units()
+
+##buying removes the unit so it doesn't work if we buy in a certain order
+
+
         shop.buy(0,4)
 
         shop.buy(1,2)
 
         shop.buy(0,1)   
-        # print("read players units")
+# print("read players units")
 
-        # shop.selling(1)
+# shop.selling(1)
 
-        # print("sold the beaver units")
-        # shop.read_player_units()
-        board_for_combat = Board(shop.create_board_for_battle())
-        # board_for_combat.show_order()
-        
-        self.assertEqual(board_for_combat.total_of_hp_and_damage(),[3,5],"Otter test failed")
+# print("sold the beaver units")
+        shop.read_player_units()
+        self.assertEqual(board.total_of_hp_and_damage(),[3,5],"Otter test failed")
 
-unittest.main()
+unittest.main() 
 
 # board_for_combat.show_order_display(board_for_combat)
 # display_board(board_for_combat,board_for_combat)
