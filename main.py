@@ -43,21 +43,22 @@ def apple_ability(target,owener_board):
 def otter_ability(otter,owner_board):
     print(owner_board)
     print(owner_board.__dir__(),"owner_board")
-    for k in owner_board.random_n_amount_of_units(otter.level):
+    for unit in owner_board.random_n_amount_of_units(otter.level):
 
-        k.perma_buff(0,1) 
+        unit.perma_buff(0,1) 
         print("otter ability worked")
     ##when bought give random ally +1*lvl hp 
     
-def mosquito_ability(self,owner_board):
+def mosquito_ability(mosqiuto,owner_board):
 
   
-        target_unit =owner_board.enemy_board.random_single_unit()
-        target_unit.take_damage(self.level)
-        print(target_unit.Name, "took damage mosquito ")
-        print(target_unit.round_hp,"HP of target")
-        owner_board.enemy_board.remove_fainted_list()
-        owner_board.remove_fainted_list()
+        owner_board.random_single_unit().perma_buff(99,99)
+      
+        print(owner_board.enemy_board)
+        print("mosquito ability activated")
+        # owner_board.remove_fainted_list()
+        print(owner_board.total_of_hp_and_damage()," edited ")
+        # print(owner_board.enemy_board == )
         
     
 
@@ -76,17 +77,17 @@ def duck_ability(duck,owner_board):
 
 
 def beaver_ability(beaver,owner_board):
-   for k in owner_board.shop.shop_board.random_n_amount_of_units(2):
+   for unit in owner_board.shop.shop_board.random_n_amount_of_units(2):
 
-        k.perma_buff(beaver.level,0) 
+        unit.perma_buff(beaver.level,0) 
    
 def cricket_ability(cricket,player_board):
     player_board.insert(0,Unit("zombiecircket",1,1))# add it at the start of line in combat 
 
 def fish_ability(fish,player_board): 
-       for units in player_board.random_n_amount_of_units(2):
+       for unit in player_board.random_n_amount_of_units(2):
 
-        units.perma_buff(fish.level,fish.level)  
+        unit.perma_buff(fish.level,fish.level)  
     
 def buy_activiation(self):
     return self.bought
@@ -115,7 +116,7 @@ status = ["buy,sell,faint,none,start_of_battle"]
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[skippper,"none"],"mouse":[otter_ability,"buy"],
                "fish":[fish_ability,"none"],"cricket":[otter_ability,"buy"],"horse":[skippper,"buy"]} 
-ability_type_dict= {"faint":faint_activation,"buy":buy_activiation,"start_of_battle":start_of_battle,"sell":sell_activiation,"summon":summon_activation,"none":skippper,}
+
 class Unit:
     def __init__(self,Name,Damage,Hp):
         self.Name = Name
@@ -169,7 +170,7 @@ class Unit:
             enemy.alive = False
         if self.round_hp <= 0:
             self.alive = False
-
+    
     def alive_check(self):
         return self.alive
     def perma_buff(self,Damage,Hp):
@@ -218,8 +219,6 @@ class Board:
   
         self.position_unit_dict = {0:None,1:None,2:None,3:None,4:None}
 
-    def add_unit(self,unit):
-        self.start_order= self.start_order.append(unit)
     def summon(self,unit):
         self.order.append(0,unit)
         for k in self.order(): 
@@ -237,9 +236,9 @@ class Board:
         return len(self.order)
     def remove_fainted_list(self):
        
-       
+        print(self.order,"self order PRE list from fainted units") 
         self.order = [x for x in self.order if  x.alive_check()]
-        # print(self.order) 
+        print(self.order,"self order POST list from fainted units") 
         # print(self.order[0].alive_check())
     def total_of_hp_and_damage(self):
         total_hp =0 
@@ -247,7 +246,7 @@ class Board:
         
         for unit in self.order:
             
-            # print(unit.__dir__())
+            print(unit.Name,unit.alive)
             total_hp =  total_hp +unit.round_hp 
             total_damage =  total_damage +unit.Damage ####### nOOOOOOOOOOOOOOOOOOOOOOOOOOOOONnnnnnnnnnnnnnnnnnnnnnnnn
         return [total_damage,total_hp]
@@ -343,7 +342,6 @@ class Board:
         return self.order[list_ally_index[0]]
     def update_board(self):
         ###careful of order
-        
         # print(self.start_order[0].ability_flag,"BASE START ORDER")
         # self.start_order_abilities = [x for x in self.start_order if  x.ability_flag and not x.activated_flag ]
         #There is an order to abilties but that should be in unit order?
@@ -369,9 +367,9 @@ class Board:
         board2.order = board2.start_order
     def fainted(self):
         print( [x for x in self.start_order if not x.alive_check()])
-    def start_board(self,board2):
-        self.board_state = "start_of_battle"
-        board2.board_state = "start_of_battle"
+    # def start_board(self,board2):
+    #     self.board_state = "start_of_battle"
+    #     board2.board_state = "start_of_battle"
     def mid_battle_state(self,board2):
         self.board_state = "mid_battle"
         board2.board_state = "mid_battle"
@@ -493,17 +491,15 @@ def battle_phase(board1,board2,round_num = None):
                 board2.start_of_battle_for_units()
                 print("START THE ROUND")
                 # board1.start_board(board2)
-                board1.remove_fainted_list()
-                board2.remove_fainted_list()
-                
+                # board1.remove_fainted_list()
+                # board2.remove_fainted_list()
+                # board1.update_board()
+                # board2.update_board()
                 # battle_finished = True
                 board1.show_order_display(board2)
-                
-                    
-                        
-                return board2.total_of_hp_and_damage()
 
-
+                return board1.total_of_hp_and_damage()                    
+              
 
             else:
                 board1.mid_battle_state(board2)
@@ -522,6 +518,9 @@ def battle_phase(board1,board2,round_num = None):
             # results
             # print(board1.amount_units())
             # print(board2.amount_units())
+        
+            
+
             if board1.amount_units() == 0 and  board2.amount_units()!=0:
                     print("board 2 wins")
                     battle_finished = True
@@ -540,6 +539,7 @@ def battle_phase(board1,board2,round_num = None):
                     # return "draw"
             else:
                     board1.show_order_display(board2)
+                
                     continue
             
             
@@ -670,16 +670,7 @@ class Unit_store:
         for ind,k in enumerate(self.board.position_unit_dict.values()):
             if isinstance(k,Unit):
                 print(ind,k.Name,k.Damage,k.round_hp)
-    def create_board_for_battle(self):
-        # process list   
-        for elemnt in ["0","1","2","3","4","5","6"]:
-                if elemnt in self.player_units:
-                    self.player_units.remove(elemnt)               
 
-        for k in self.player_units:
-            # print(k.Name)           
-            k.bought = False
-        return self.player_units
     def shop_units(self):
         print(self.shop_units)
     def selling(self,index):
@@ -694,13 +685,7 @@ class Unit_store:
             self.board.position_unit_dict[index].update_state("sell")
             self.board.position_unit_dict[index].update()
             self.board.position_unit_dict[index] = None
-        
-    
-       
-         
-           
-    
-                                 
+                       
     def freeze(self,index):
         self.freeze_list.append(self.shop_units[index])      
     def unfreeze(self,index):
@@ -837,6 +822,7 @@ class Item: # becareful there are many types of abiltiies from buffs to reducing
 
 # shop.buy(0,3)   
 # print("read players units")
+
 board = Board()
 shop= Unit_store()
 board.shop_linking(shop)
@@ -847,9 +833,13 @@ shop.edit_shop([["pig",1,1],["pig",1,1],["mosqutio",1,1]])
 shop.buy(0,4)
 shop.buy(1,1)
 shop.buy(0,3)   
-total_hp =battle_phase(board,board,1) 
+total_hp =battle_phase(board,board,4) 
 
-print(total_hp,"tot hp")
+# print(total_hp)
+
+
+
+
 # shop.selling(1)
 
 # print("sold the beaver units")
@@ -901,6 +891,7 @@ class CustomTests(unittest.TestCase):
         shop.buy(0,1)    
         # shop.read_player_units()
         #start combat here ? and take the hp total during round 1?
+        total_hp =battle_phase(board,board,1) 
         self.assertEqual(board.total_of_hp_and_damage_prebattle(),[2,4],"Duck test failed")
 
 
@@ -934,3 +925,7 @@ class CustomTests(unittest.TestCase):
 # display_board(first_board,second_board)
 
 #pytorch
+
+
+
+### units[state] <- if state === abuluty _
