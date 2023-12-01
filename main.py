@@ -48,18 +48,17 @@ def otter_ability(otter,owner_board):
         unit.perma_buff(0,1) 
         print("otter ability worked")
     ##when bought give random ally +1*lvl hp 
-    
+        
 def mosquito_ability(mosqiuto,owner_board):
-
-  
+        print("Inside function:", id(owner_board))
         owner_board.random_single_unit().perma_buff(99,99)
       
         print(owner_board.enemy_board)
         print("mosquito ability activated")
         # owner_board.remove_fainted_list()
         print(owner_board.total_of_hp_and_damage()," edited ")
-        # print(owner_board.enemy_board == )
-        
+
+        # owner_board = None
     
 
 def ant_ability(self,owner_board=None):
@@ -274,6 +273,7 @@ class Board:
         curr_middle = ""
         curr_low_middle = ""
         curr_lower=""
+       
         for position,units in enumerate(self.order[::-1]):
             # self.order.append(units)
             # print(f""" -----{position}---\n|    {units.Name}    |\n|damage:{units.Damage}||hp:{unitsround_hp}|""")
@@ -339,6 +339,7 @@ class Board:
 
         list_ally_index = np.random.randint(0,self.amount_units(),1) ## check this if a single random unit is being called and acts funny not using np methods of others 
         
+       
         return self.order[list_ally_index[0]]
     def update_board(self):
         ###careful of order
@@ -485,10 +486,14 @@ def battle_phase(board1,board2,round_num = None):
             print("======================")
             
             if round_count ==1:
-
-                board1.show_order_display(board2)
+                print("Before function call:", id(board1))
+                # board1.show_order_display(board2)
                 board1.start_of_battle_for_units()
+                
                 board2.start_of_battle_for_units()
+                
+
+                print("After function call:", id(board1))
                 print("START THE ROUND")
                 # board1.start_board(board2)
                 # board1.remove_fainted_list()
@@ -835,7 +840,7 @@ shop.buy(1,1)
 shop.buy(0,3)   
 total_hp =battle_phase(board,board,4) 
 
-# print(total_hp)
+print(total_hp,"total hp_")
 
 
 
