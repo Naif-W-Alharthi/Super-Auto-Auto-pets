@@ -107,9 +107,9 @@ ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqut
 class Unit:
     def __init__(self,Name,Damage,Hp):
         self.Name = Name
-        self.round_hp = Hp
-        self.base_Hp = Hp
-        self.Damage = Damage
+        self.base_hp = Hp
+      
+        self.Base_damage = Damage
         # x.ability_flag and not x.activated_flag
         self.Cost =3 
         self.level=1
@@ -150,25 +150,25 @@ class Unit:
             self.ability_used = True
             # print("update worked")
     def attack(self,enemy):
-        enemy.round_hp = enemy.round_hp - self.Damage
-        self.round_hp = self.round_hp - enemy.Damage
+        enemy.base_hp = enemy.base_hp - self.Base_damage
+        self.base_hp = self.base_hp - enemy.Base_damage
         print(self.Name, " attacked ",enemy.Name )
         print(enemy.Name, " attacked ",self.Name )
-        if enemy.round_hp <= 0:
+        if enemy.base_hp <= 0:
             enemy.alive = False
-        if self.round_hp <= 0:
+        if self.base_hp <= 0:
             self.alive = False
     
     def alive_check(self):
         return self.alive
     def perma_buff(self,Damage,Hp):
         # print("perma_buffing")
-        self.round_hp = self.round_hp+Hp
-        self.Damage=self.Damage + Damage
+        self.base_hp = self.base_hp+Hp
+        self.Base_damage=self.Base_damage + Damage
     def temp_buff(self,Damage,Hp):
         # print(Hp,Damage,"temp buff")
-        self.round_hp = self.round_hp+Hp
-        self.Damage=self.Damage + Damage
+        self.base_hp = self.base_hp+Hp
+        self.Base_damage=self.Base_damage + Damage
         self.temp_buff_hp = self.temp_buff_hp+ Hp
         self.temp_buff_damage=self.temp_buff_damage +Damage
     # def activation_condition(self,function):
@@ -183,14 +183,14 @@ class Unit:
     def round_end(self):
         self.alive = True
         self.activated_flag = False
-        self.round_hp=self.base_Hp
-        self.Damage=self.Damage-self.temp_buff_damage
+        self.base_hp=self.base_hp - self.temp_buff_hp
+        self.Base_damage=self.Base_damage-self.temp_buff_damage
         self.temp_buff_damage = 0
         self.temp_buff_hp = 0
 
     def take_damage(self,damage_amount):
-        self.round_hp= self.round_hp -damage_amount
-        if self.round_hp <= 0:
+        self.base_hp= self.base_hp -damage_amount
+        if self.base_hp <= 0:
             self.alive = False
 
             
@@ -215,7 +215,7 @@ class Board:
     def show_order(self):
         # for position,units in enumerate(self.order[::-1]):
         #     self.order.append(units)
-            # print(position,units.Name, unitsround_hp, units.Damage)
+            # print(position,units.Name, unitsround_hp, units.Base_damage)
         # print(self.order,"show order")
         # print(self.order[0])
         pass
@@ -244,8 +244,8 @@ class Board:
         for unit in self.order:
             
             print(unit.Name,unit.alive)
-            total_hp =  total_hp +unit.round_hp 
-            total_damage =  total_damage +unit.Damage ####### nOOOOOOOOOOOOOOOOOOOOOOOOOOOOONnnnnnnnnnnnnnnnnnnnnnnnn
+            total_hp =  total_hp +unit.base_hp 
+            total_damage =  total_damage +unit.Base_damage ####### nOOOOOOOOOOOOOOOOOOOOOOOOOOOOONnnnnnnnnnnnnnnnnnnnnnnnn
         return [total_damage,total_hp]
     def total_of_hp_and_damage_prebattle(self):
         total_hp =0 
@@ -255,8 +255,8 @@ class Board:
         for unit in self.targetable_units:
             
             # print(unit.__dir__())
-            total_hp =  total_hp +unit.round_hp 
-            total_damage =  total_damage +unit.Damage ####### nOOOOOOOOOOOOOOOOOOOOOOOOOOOOONnnnnnnnnnnnnnnnnnnnnnnnn
+            total_hp =  total_hp +unit.base_hp 
+            total_damage =  total_damage +unit.Base_damage ####### nOOOOOOOOOOOOOOOOOOOOOOOOOOOOONnnnnnnnnnnnnnnnnnnnnnnnn
         return [total_damage,total_hp]
 
     def show_order_display(self,other_board = None):
@@ -274,13 +274,13 @@ class Board:
        
         for position,units in enumerate(self.order[::-1]):
             # self.order.append(units)
-            # print(f""" -----{position}---\n|    {units.Name}    |\n|damage:{units.Damage}||hp:{unitsround_hp}|""")
+            # print(f""" -----{position}---\n|    {units.Name}    |\n|damage:{units.Base_damage}||hp:{unitsround_hp}|""")
             curr_upper=curr_upper+base_upper
             curr_upo_middle =curr_upo_middle+base_upo_middle.replace("P",str(position))
            
             curr_middle = curr_middle + base_middle.replace("N",units.Name[0:2])
-            tmep_ =  base_low_middle.replace("d",str(units.Damage))
-            tmep_ = tmep_.replace("h",str(units.round_hp))
+            tmep_ =  base_low_middle.replace("d",str(units.Base_damage))
+            tmep_ = tmep_.replace("h",str(units.base_hp))
             curr_low_middle = curr_low_middle + tmep_
             curr_lower=curr_lower+base_lower
         curr_upper= curr_upper+"          __    "
@@ -290,12 +290,12 @@ class Board:
         curr_lower=curr_lower + "    \_/  \__/   "
         for position,units in enumerate(other_board.order):
             # self.order.append(units)
-            # print(f""" -----{position}---\n|    {units.Name}    |\n|damage:{units.Damage}||hp:{units.Hp}|""")
+            # print(f""" -----{position}---\n|    {units.Name}    |\n|damage:{units.Base_damage}||hp:{units.Hp}|""")
             curr_upper=curr_upper+base_upper
             curr_upo_middle =curr_upo_middle+base_upo_middle.replace("P",str(position))
             curr_middle = curr_middle + base_middle.replace("N",units.Name[0:2])
-            tmep_ =  base_low_middle.replace("d",str(units.Damage))
-            tmep_ = tmep_.replace("h",str(units.round_hp))
+            tmep_ =  base_low_middle.replace("d",str(units.Base_damage))
+            tmep_ = tmep_.replace("h",str(units.base_hp))
             curr_low_middle = curr_low_middle + tmep_
             curr_lower=curr_lower+base_lower
 
@@ -660,12 +660,12 @@ class Unit_store:
     def read(self):
         for k in self.shop_units:
          
-                print(k.Name,k.Damage,k.round_hp)
+                print(k.Name,k.Base_damage,k.base_hp)
         # print(self.shop_units,"SHOW READ IS ")
     def read_player_units(self):
         for ind,k in enumerate(self.board.position_unit_dict.values()):
             if isinstance(k,Unit):
-                print(ind,k.Name,k.Damage,k.round_hp)
+                print(ind,k.Name,k.Base_damage,k.base_hp)
 
     def shop_units(self):
         print(self.shop_units)
