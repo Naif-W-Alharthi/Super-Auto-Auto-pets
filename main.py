@@ -163,7 +163,7 @@ class Unit:
         return self.alive
     def perma_buff(self,Damage,Hp):
         # print("perma_buffing")
-        self.base_Hp = self.round_hp+Hp
+        self.round_hp = self.round_hp+Hp
         self.Damage=self.Damage + Damage
     def temp_buff(self,Damage,Hp):
         # print(Hp,Damage,"temp buff")
