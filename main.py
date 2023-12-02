@@ -116,7 +116,7 @@ class Unit:
         self.Tier=1
         self.Sell_price=self.level
         self.perk = None
-   
+        self.level_amount = 0
         self.ability=ability_dict[Name][0]
         self.temp_buff_hp = 0
         self.temp_buff_damage= 0
@@ -163,7 +163,7 @@ class Unit:
         return self.alive
     def perma_buff(self,Damage,Hp):
         # print("perma_buffing")
-        self.round_hp = self.round_hp+Hp
+        self.base_Hp = self.round_hp+Hp
         self.Damage=self.Damage + Damage
     def temp_buff(self,Damage,Hp):
         # print(Hp,Damage,"temp buff")
@@ -223,9 +223,18 @@ class Board:
     def amount_units(self):
         return len(self.order)
     def remove_fainted_list(self):
-       
-      
-        self.order = [x for x in self.order if  x.alive_check()]
+        temp_list = []
+        for unit in self.order:
+            
+            if unit.alive_check():
+                temp_list.append(unit)
+            else:
+                self.order.remove(unit)
+                unit.update_state("faint")
+
+                unit.update(self)
+            # self.order = [x for x in self.order if  x.alive_check()]
+
        
         # print(self.order[0].alive_check())
     def total_of_hp_and_damage(self):
@@ -296,16 +305,7 @@ class Board:
         print(curr_middle)         
         print(curr_low_middle)
         print(curr_lower)   
-    # def random_n_amount_of_units(self,num_ally):
-    #     print("MADE IT TO BOARD RANDOM N AMOUNT OF UNITS")
-    #     amount_of_targetable_allies = self.amount_units()
-
-    #     list_ally_index = list_ally_index = np.random.choice(amount_of_targetable_allies, size=num_ally, replace=False)
-    #     print(list_ally_index,"list ally_dindex")
-    #     temp_list = []
-    #     for k in list_ally_index:
-    #             temp_list.append(self.order[k])
-    #     return temp_list
+    
     def random_n_amount_of_units(self,num_ally):
         self.create_targetable_list()
         # print(num_ally,len(self.targetable_units),"num ally and len targetable")
@@ -332,10 +332,7 @@ class Board:
        
         return list_ally_index[0]
     def update_board(self):
-        ###careful of order
-        # print(self.start_order[0].ability_flag,"BASE START ORDER")
-        # self.start_order_abilities = [x for x in self.start_order if  x.ability_flag and not x.activated_flag ]
-        #There is an order to abilties but that should be in unit order?
+ 
  
         for unit in self.order:
             unit.update_state("mid_battle")
@@ -613,32 +610,42 @@ class Unit_store:
         # print(self.shop_units,"shop units")
     def buy(self,index,place):
         
-        
-        if self.gold >2:
-            self.gold =self.gold-3
-            
+        if self.board.position_unit_dict[place] == None:
+                
+            if self.gold >2:
+                self.gold =self.gold-3
+                
 
-            #bought effects
-            # self.shop_units[index].bought = True
-            self.shop_units[index].update_state("buy")
-            self.shop_units[index].owner_board = self.board
-            self.shop_units[index].update(self)
-   
-            # self.shop_units[index].ability(self.shop_units[index],self) 
-            # self.shop_units[index].activated_flag = True
-           
+                #bought effects
+                # self.shop_units[index].bought = True
+                self.shop_units[index].update_state("buy")
+                self.shop_units[index].owner_board = self.board
+                self.shop_units[index].update(self)
+    
+                # self.shop_units[index].ability(self.shop_units[index],self) 
+                # self.shop_units[index].activated_flag = True
             
                 
-            if self.board.position_unit_dict[place] == None:
+                    
+               
                 self.board.position_unit_dict[place]= self.shop_units[index]
-            else:
-                print("UNIT IS ALREADY IN THAT PLACE")
+                
+                   
 
-            # np.insert( self.player_units,place,self.shop_units[index]) 
-            # print(self.shop_units[index],"shop unit index")
-      
-            self.shop_units= np.delete(self.shop_units,index) 
-            # print("bought the ",self.shop_units[0].Name,place,"bought test")
+                # np.insert( self.player_units,place,self.shop_units[index]) 
+                # print(self.shop_units[index],"shop unit index")
+
+                self.shop_units= np.delete(self.shop_units,index) 
+                # print("bought the ",self.shop_units[0].Name,place,"bought test")
+        elif  self.board.position_unit_dict[place].Name == self.shop_units[index].Name:
+             
+             self.board.position_unit_dict[place].level_amount = self.board.position_unit_dict[place].level_amount  +1 
+             self.board.position_unit_dict[place].perma_buff(1,1)
+             if self.board.position_unit_dict[place].level == 1 and self.board.position_unit_dict[place].level_amount >1:
+                 self.board.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
+        else:
+             print("UNIT IS ALREADY IN THAT PLACE")
+
     def add_unitpool(self):
         self.units_pool=  np.concatenate((self.units_pool,dict_of_pets[self.turn]))
         # np.concatenate([a,b], axis=1) 
@@ -818,11 +825,11 @@ board.shop_linking(shop)
 shop.link_to_board(board)
 shop.generate_units()
 # shop.reroll()
-shop.edit_shop([["pig",1,1],["pig",1,1],["ant",1,1]])
+shop.edit_shop([["pig",1,1],["pig",1,1],["pig",1,1]])
 shop.buy(0,4)
-shop.buy(1,1)
-shop.buy(0,3)   
-total_hp =battle_phase(board,board, 2) 
+shop.buy(1,4)
+shop.buy(0,4)   
+# total_hp =battle_phase(board,board, 1) 
 
 # print(total_hp,"total hp_")
 
@@ -897,6 +904,20 @@ class CustomTests(unittest.TestCase):
         shop.buy(0,3)   
         total_hp =battle_phase(board,board, 1) 
         self.assertEqual(total_hp,[1,1],"Mosqutio test failed")
+
+    def test_ant_ability(self):
+        board = Board()
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+        # shop.reroll()
+        shop.edit_shop([["pig",1,1],["pig",1,1],["ant",1,1]])
+        shop.buy(0,4)
+        shop.buy(1,1)
+        shop.buy(0,3)   
+        total_hp =battle_phase(board,board, 1) 
+        self.assertEqual(total_hp,[3,3],"Ant test failed")
 
 # unittest.main() 
 
