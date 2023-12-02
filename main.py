@@ -919,7 +919,7 @@ class CustomTests(unittest.TestCase):
         total_hp =battle_phase(board,board, 1) 
         self.assertEqual(total_hp,[3,3],"Ant test failed")
 
-# unittest.main() 
+unittest.main() 
 
 # board_for_combat.show_order_display(board_for_combat)
 # display_board(board_for_combat,board_for_combat)
