@@ -42,7 +42,7 @@ def apple_ability(target,owener_board):
 
 def otter_ability(otter,owner_board):
 
-    for unit in owner_board.board.random_n_amount_of_units(otter.level):
+    for unit in owner_board.board.random_n_amount_of_units(otter.level,otter):
 
         unit.perma_buff(0,1) 
     
@@ -73,7 +73,7 @@ def duck_ability(duck,owner_board):
 
 
 def beaver_ability(beaver,owner_board):
-   for unit in owner_board.shop.shop_board.random_n_amount_of_units(2):
+   for unit in owner_board.shop.shop_board.random_n_amount_of_units(2,beaver):
 
         unit.perma_buff(beaver.level,0) 
    
@@ -82,7 +82,7 @@ def cricket_ability(cricket,player_board):
 
 def fish_ability(fish,player_board): 
        print("FISH ABILITY USED")
-       for unit in player_board.random_n_amount_of_units(2):
+       for unit in player_board.random_n_amount_of_units(2,fish):
 
         unit.perma_buff(fish.level,fish.level)  
 
@@ -337,13 +337,14 @@ class Board:
         print(curr_low_middle)
         print(curr_lower)   
     
-    def random_n_amount_of_units(self,num_ally):
-        self.create_targetable_list()
+    def random_n_amount_of_units(self,num_ally,exempt = None):
+        self.create_targetable_list(exempt)
         # print(num_ally,len(self.targetable_units),"num ally and len targetable")
-        if len(self.targetable_units) != 0:
+        length_of_targetable_list  = len(self.targetable_units)
+        if length_of_targetable_list !=0:
        
-          
-        
+          if length_of_targetable_list <= num_ally:
+              return self.targetable_units
           list_ally_index = np.random.choice(self.targetable_units, size=num_ally, replace=False)
  
           temp_list = []
@@ -369,7 +370,7 @@ class Board:
             unit.update_state("mid_battle")
             unit.update(self)
             
-
+    
 
     def start_of_battle_for_units(self):
         for unit in self.order:
@@ -395,14 +396,14 @@ class Board:
     def enemy_board_linking(self,board2):
         self.enemy_board =board2
         board2.enemy_board = self
-    def create_targetable_list(self):
+    def create_targetable_list(self,exempt=None):
         self.targetable_units =[]
-        for units in self.position_unit_dict.values(): 
+        for unit in self.position_unit_dict.values(): 
           
             
-            if units != None:
-             
-                self.targetable_units.append(units)
+            if unit != None:
+                if unit != exempt:
+                    self.targetable_units.append(unit)
     
     def create_board_for_battle(self):
         # process list   
@@ -756,7 +757,10 @@ class Unit_store:
         return temp_num
     def gold_check(self):
         print(f"player gold is : {self.gold}")
-    
+
+    def gold_override(self,num):
+            #dev tool to enable testing
+            self.gold = num
 class Item_shop:
     ## add freezing, refreshing, generating 
     def __init__(self,unit_store):
@@ -876,18 +880,22 @@ class Item: # becareful there are many types of abiltiies from buffs to reducing
 # shop.buy(0,3)   
 # print("read players units")
 
-board = Board()
-shop= Unit_store()
-board.shop_linking(shop)
-shop.link_to_board(board)
-shop.generate_units()
-# shop.reroll()
-shop.edit_shop([["fish",1,1],["fish",1,1],["fish",1,1]])
-shop.buy(0,4)
-shop.buy(1,4)
-shop.buy(0,4)   
-print(board.position_unit_dict[4].base_hp,board.position_unit_dict[4].Base_damage)
-# total_hp =battle_phase(board,board, 1) 
+# board = Board()
+# shop= Unit_store()
+# board.shop_linking(shop)
+# shop.link_to_board(board)
+# shop.generate_units()
+# # shop.reroll()
+# ### TODO perma buffs aren't removed when adding units 
+# shop.gold_override(9999)
+# shop.edit_shop([["fish",2,2],["fish",1,1],["fish",1,1],["duck",1,1]]) ## another is buffed
+# shop.buy(0,4)   
+# shop.buy(1,4)
+# shop.buy(1,3)
+# shop.buy(0,4)   
+# print(board.position_unit_dict[4].base_hp,board.position_unit_dict[4].Base_damage)
+# print(board.position_unit_dict[3].base_hp,board.position_unit_dict[3].Base_damage)
+# # total_hp =battle_phase(board,board, 1) 
 
 # print(total_hp,"total hp_")
 
@@ -921,13 +929,13 @@ class CustomTests(unittest.TestCase):
         shop= Unit_store()
         board.shop_linking(shop)
         shop.link_to_board(board)
-        shop.generate_units()
+    
         shop.edit_shop([["otter",1,1],["otter",1,1],["otter",1,1]])
-        shop.read_player_units()
+ 
         shop.buy(0,4)
         shop.buy(1,2)
         shop.buy(0,1)    
-        shop.read_player_units()
+    
         self.assertEqual(board.total_of_hp_and_damage_prebattle(),[3,5],"Otter test failed")
 
     def test_duck_ability(self):
@@ -989,6 +997,22 @@ class CustomTests(unittest.TestCase):
         shop.buy(0,4)   
         print(board.position_unit_dict[4].Name,board.position_unit_dict[4].level,board.position_unit_dict[4].level_amount)
         self.assertEqual([board.position_unit_dict[4].level,board.position_unit_dict[4].level_amount],[2,0],"leveling test without ability failed")
+    def test_fish_ability(self):
+        board = Board()
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+        # shop.reroll()
+        ### TODO perma buffs aren't removed when adding units 
+        shop.gold_override(9999)
+        shop.edit_shop([["fish",2,2],["fish",1,1],["fish",1,1],["duck",1,1]]) ## another is buffed
+        shop.buy(0,4)   
+        shop.buy(1,4)
+        shop.buy(1,3)
+        shop.buy(0,4)   
+
+        self.assertEqual([board.position_unit_dict[3].base_hp,board.position_unit_dict[3].Base_damage],[2,2],"fish ability failed")
 # unittest.main() 
 
 # board_for_combat.show_order_display(board_for_combat)
