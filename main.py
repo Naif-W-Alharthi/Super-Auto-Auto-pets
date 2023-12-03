@@ -81,6 +81,7 @@ def cricket_ability(cricket,player_board):
     player_board.insert(0,Unit("zombiecircket",1,1))# add it at the start of line in combat 
 
 def fish_ability(fish,player_board): 
+       print("FISH ABILITY USED")
        for unit in player_board.random_n_amount_of_units(2):
 
         unit.perma_buff(fish.level,fish.level)  
@@ -102,7 +103,7 @@ def summon_activation(self):
 status = ["buy,sell,faint,none,start_of_battle"]
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[skippper,"none"],"mouse":[otter_ability,"buy"],
-               "fish":[fish_ability,"none"],"cricket":[otter_ability,"buy"],"horse":[skippper,"buy"]} 
+               "fish":[fish_ability,"level_up"],"cricket":[otter_ability,"buy"],"horse":[skippper,"buy"]} 
 
 class Unit:
     def __init__(self,Name,Damage,Hp):
@@ -213,25 +214,33 @@ class Board:
     #         if ability_dict[k.Name][1]== "summon":# trying to activate all simmon ability and give them a target of the summoned unit 
     #             print()
     def swap_unit_place(self,origin,end):
+             if origin >5 or end>5:
+                 print("Out of range")
+             if self.position_unit_dict[origin] == None:
+                 print("Failure to move due to moving an empty slot")
              
+             if self.position_unit_dict[end].Name != self.position_unit_dict[origin].Name:
+                 print("Units is already in the space")
+
+                
              if self.position_unit_dict[end].Name  == self.position_unit_dict[origin].Name and not self.position_unit_dict[end].level == 3:
                 # self.position_unit_dict[place].Name == self.shop_units[index].Name and not self.shop_units[index].level == 3:
                 print("LEVELING UP ")
-                self.position_unit_dict[end].level_amount = self.board.position_unit_dict[end].level_amount  +self.position_unit_dict[end] +1
+                self.position_unit_dict[end].level_amount = self.board.position_unit_dict[origin].level_amount  +self.position_unit_dict[end].level_amount +1
                 self.position_unit_dict[end].perma_buff(self.position_unit_dict[origin],self.position_unit_dict[end])
 
-                if self.position_unit_dict[place].level == 1 and self.board.position_unit_dict[place].level_amount ==2 :
-                    self.position_unit_dict[place].update_state("level_up")
-                    self.position_unit_dict[place].update()
-                    self.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
+                if self.position_unit_dict[origin].level == 1 and self.board.position_unit_dict[origin].level_amount ==2 :
+                    self.position_unit_dict[origin].update_state("level_up")
+                    self.position_unit_dict[origin].update()
+                    self.position_unit_dict[origin].level = self.board.position_unit_dict[origin].level+1
 
-                    self.position_unit_dict[place].level_amount =self.board.position_unit_dict[place].level_amount - 4
+                    self.position_unit_dict[origin].level_amount =self.board.position_unit_dict[origin].level_amount - 2
 
-                if self.position_unit_dict[place].level == 2 and self.board.position_unit_dict[place].level_amount >2:
-                    self.position_unit_dict[place].update_state("level_up")
-                    self.position_unit_dict[place].update()
-                    self.position_unit_dict[place].level_amount =self.board.position_unit_dict[place].level_amount - 3
-                    self.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
+                if self.position_unit_dict[origin].level == 2 and self.board.position_unit_dict[origin].level_amount >2:
+                    self.position_unit_dict[origin].update_state("level_up")
+                    self.position_unit_dict[origin].update()
+                    self.position_unit_dict[origin].level_amount =self.board.position_unit_dict[origin].level_amount - 3
+                    self.position_unit_dict[origin].level = self.board.position_unit_dict[origin].level+1
 
             
     def show_order(self):
@@ -553,6 +562,24 @@ def battle_phase(board1,board2,round_num = None):
             
     ##
 
+# def leveling_up(leveling_unit,sacrifice_unit):
+#     self.board.position_unit_dict[place].Name == self.shop_units[index].Name and not self.shop_units[index].level == 3:
+#              print("LEVELING UP ")
+#              self.board.position_unit_dict[place].level_amount = self.board.position_unit_dict[place].level_amount  +self.shop_units[index].level_amount +1
+#              self.board.position_unit_dict[place].perma_buff(self.shop_units[index].level,self.shop_units[index].level)
+
+#              if self.board.position_unit_dict[place].level == 1 and self.board.position_unit_dict[place].level_amount ==2 :
+#                  self.board.position_unit_dict[place].update_state("level_up")
+#                  self.board.position_unit_dict[place].update(self.board)
+#                  self.board.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
+
+#                  self.board.position_unit_dict[place].level_amount =self.board.position_unit_dict[place].level_amount - 2
+
+#              if self.board.position_unit_dict[place].level == 2 and self.board.position_unit_dict[place].level_amount >2:
+#                  self.board.position_unit_dict[place].update_state("level_up")
+#                  self.board.position_unit_dict[place].update()
+#                  self.board.position_unit_dict[place].level_amount =self.board.position_unit_dict[place].level_amount - 3
+#                  self.board.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
     
 dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish","cricket","horse"],3:["snail","crab","swan","rat","hedgehog","peacock","flmingo","worm","kangaroo","spider"],5:["dodo","badger","dolphin","giraffe","elephint","camel","rabbit","bull","dog","sheep"]
                ,7:["skunk","hipoo","pufferfish","turtle","squrial","penguin","deer","whale","parrot"],9:["scropion","crocidle","rhino","monkey","armadilo","cow","seal","chciken","shark","turkey"]
@@ -656,15 +683,15 @@ class Unit_store:
                 # print("bought the ",self.shop_units[0].Name,place,"bought test")
         elif  self.board.position_unit_dict[place].Name == self.shop_units[index].Name and not self.shop_units[index].level == 3:
              print("LEVELING UP ")
-             self.board.position_unit_dict[place].level_amount = self.board.position_unit_dict[place].level_amount  +self.shop_units[index].level +1
+             self.board.position_unit_dict[place].level_amount = self.board.position_unit_dict[place].level_amount  +self.shop_units[index].level_amount +1
              self.board.position_unit_dict[place].perma_buff(self.shop_units[index].level,self.shop_units[index].level)
 
              if self.board.position_unit_dict[place].level == 1 and self.board.position_unit_dict[place].level_amount ==2 :
                  self.board.position_unit_dict[place].update_state("level_up")
-                 self.board.position_unit_dict[place].update()
+                 self.board.position_unit_dict[place].update(self.board)
                  self.board.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
 
-                 self.board.position_unit_dict[place].level_amount =self.board.position_unit_dict[place].level_amount - 4
+                 self.board.position_unit_dict[place].level_amount =self.board.position_unit_dict[place].level_amount - 2
 
              if self.board.position_unit_dict[place].level == 2 and self.board.position_unit_dict[place].level_amount >2:
                  self.board.position_unit_dict[place].update_state("level_up")
@@ -782,7 +809,9 @@ class Item_shop:
             
         else:
             print(self.gold)
-
+    def gold_override(self,num):
+        #dev tool to enable testing
+        self.gold = num
 dict_of_items_ability = {}
 dict_of_items_types= {} 
 
@@ -853,11 +882,11 @@ board.shop_linking(shop)
 shop.link_to_board(board)
 shop.generate_units()
 # shop.reroll()
-shop.edit_shop([["pig",1,1],["pig",1,1],["pig",1,1]])
+shop.edit_shop([["fish",1,1],["fish",1,1],["fish",1,1]])
 shop.buy(0,4)
 shop.buy(1,4)
 shop.buy(0,4)   
-print(board.position_unit_dict[4].Name,board.position_unit_dict[4].level,board.position_unit_dict[4].level_amount)
+print(board.position_unit_dict[4].base_hp,board.position_unit_dict[4].Base_damage)
 # total_hp =battle_phase(board,board, 1) 
 
 # print(total_hp,"total hp_")
@@ -947,7 +976,19 @@ class CustomTests(unittest.TestCase):
         shop.buy(0,3)   
         total_hp =battle_phase(board,board, 1) 
         self.assertEqual(total_hp,[3,3],"Ant test failed")
-
+    def test_leveling_up_unit_without_ability(self):
+        board = Board()
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+        # shop.reroll()
+        shop.edit_shop([["pig",1,1],["pig",1,1],["pig",1,1]])
+        shop.buy(0,4)
+        shop.buy(1,4)
+        shop.buy(0,4)   
+        print(board.position_unit_dict[4].Name,board.position_unit_dict[4].level,board.position_unit_dict[4].level_amount)
+        self.assertEqual([board.position_unit_dict[4].level,board.position_unit_dict[4].level_amount],[2,0],"leveling test without ability failed")
 # unittest.main() 
 
 # board_for_combat.show_order_display(board_for_combat)
