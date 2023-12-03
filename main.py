@@ -178,7 +178,7 @@ class Unit:
     #     if function:
     #             self.ability_flag= True
 
-                
+        
 
     def round_end(self):
         self.alive = True
@@ -207,11 +207,33 @@ class Board:
   
         self.position_unit_dict = {0:None,1:None,2:None,3:None,4:None}
 
-    def summon(self,unit):
-        self.order.append(0,unit)
-        for k in self.order(): 
-            if ability_dict[k.Name][1]== "summon":# trying to activate all simmon ability and give them a target of the summoned unit 
-                print()
+    # def summon(self,unit):
+    #     self.order.append(0,unit)
+    #     for k in self.order(): 
+    #         if ability_dict[k.Name][1]== "summon":# trying to activate all simmon ability and give them a target of the summoned unit 
+    #             print()
+    def swap_unit_place(self,origin,end):
+             
+             if self.position_unit_dict[end].Name  == self.position_unit_dict[origin].Name and not self.position_unit_dict[end].level == 3:
+                # self.position_unit_dict[place].Name == self.shop_units[index].Name and not self.shop_units[index].level == 3:
+                print("LEVELING UP ")
+                self.position_unit_dict[end].level_amount = self.board.position_unit_dict[end].level_amount  +self.position_unit_dict[end] +1
+                self.position_unit_dict[end].perma_buff(self.position_unit_dict[origin],self.position_unit_dict[end])
+
+                if self.position_unit_dict[place].level == 1 and self.board.position_unit_dict[place].level_amount ==2 :
+                    self.position_unit_dict[place].update_state("level_up")
+                    self.position_unit_dict[place].update()
+                    self.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
+
+                    self.position_unit_dict[place].level_amount =self.board.position_unit_dict[place].level_amount - 4
+
+                if self.position_unit_dict[place].level == 2 and self.board.position_unit_dict[place].level_amount >2:
+                    self.position_unit_dict[place].update_state("level_up")
+                    self.position_unit_dict[place].update()
+                    self.position_unit_dict[place].level_amount =self.board.position_unit_dict[place].level_amount - 3
+                    self.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
+
+            
     def show_order(self):
         # for position,units in enumerate(self.order[::-1]):
         #     self.order.append(units)
@@ -621,12 +643,7 @@ class Unit_store:
                 self.shop_units[index].update_state("buy")
                 self.shop_units[index].owner_board = self.board
                 self.shop_units[index].update(self)
-    
-                # self.shop_units[index].ability(self.shop_units[index],self) 
-                # self.shop_units[index].activated_flag = True
-            
-                
-                    
+
                
                 self.board.position_unit_dict[place]= self.shop_units[index]
                 
@@ -637,15 +654,26 @@ class Unit_store:
 
                 self.shop_units= np.delete(self.shop_units,index) 
                 # print("bought the ",self.shop_units[0].Name,place,"bought test")
-        elif  self.board.position_unit_dict[place].Name == self.shop_units[index].Name:
-             
-             self.board.position_unit_dict[place].level_amount = self.board.position_unit_dict[place].level_amount  +1 
-             self.board.position_unit_dict[place].perma_buff(1,1)
-             if self.board.position_unit_dict[place].level == 1 and self.board.position_unit_dict[place].level_amount >1:
+        elif  self.board.position_unit_dict[place].Name == self.shop_units[index].Name and not self.shop_units[index].level == 3:
+             print("LEVELING UP ")
+             self.board.position_unit_dict[place].level_amount = self.board.position_unit_dict[place].level_amount  +self.shop_units[index].level +1
+             self.board.position_unit_dict[place].perma_buff(self.shop_units[index].level,self.shop_units[index].level)
+
+             if self.board.position_unit_dict[place].level == 1 and self.board.position_unit_dict[place].level_amount ==2 :
+                 self.board.position_unit_dict[place].update_state("level_up")
+                 self.board.position_unit_dict[place].update()
+                 self.board.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
+
+                 self.board.position_unit_dict[place].level_amount =self.board.position_unit_dict[place].level_amount - 4
+
+             if self.board.position_unit_dict[place].level == 2 and self.board.position_unit_dict[place].level_amount >2:
+                 self.board.position_unit_dict[place].update_state("level_up")
+                 self.board.position_unit_dict[place].update()
+                 self.board.position_unit_dict[place].level_amount =self.board.position_unit_dict[place].level_amount - 3
                  self.board.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
         else:
              print("UNIT IS ALREADY IN THAT PLACE")
-
+    
     def add_unitpool(self):
         self.units_pool=  np.concatenate((self.units_pool,dict_of_pets[self.turn]))
         # np.concatenate([a,b], axis=1) 
@@ -829,6 +857,7 @@ shop.edit_shop([["pig",1,1],["pig",1,1],["pig",1,1]])
 shop.buy(0,4)
 shop.buy(1,4)
 shop.buy(0,4)   
+print(board.position_unit_dict[4].Name,board.position_unit_dict[4].level,board.position_unit_dict[4].level_amount)
 # total_hp =battle_phase(board,board, 1) 
 
 # print(total_hp,"total hp_")
@@ -919,7 +948,7 @@ class CustomTests(unittest.TestCase):
         total_hp =battle_phase(board,board, 1) 
         self.assertEqual(total_hp,[3,3],"Ant test failed")
 
-unittest.main() 
+# unittest.main() 
 
 # board_for_combat.show_order_display(board_for_combat)
 # display_board(board_for_combat,board_for_combat)
