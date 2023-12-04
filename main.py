@@ -38,8 +38,10 @@ def apple_ability(target,owener_board):
 ##stack order
 #1)hurt (alive units get pirio)
 #2)faint (by which one dies first) (tie is broken by left to right on player side?)
-
-
+# ### TODO perma buffs aren't removed when adding units 
+def horse_ability(horse,target):
+     target.temp_buff(0,horse.level)
+     print("Horse ability activated")
 def otter_ability(otter,owner_board):
 
     for unit in owner_board.board.random_n_amount_of_units(otter.level,otter):
@@ -49,12 +51,7 @@ def otter_ability(otter,owner_board):
     ##when bought give random ally +1*lvl hp 
         
 def mosquito_ability(mosqiuto,owner_board):
-   
         owner_board.order[owner_board.random_single_unit()].take_damage(mosqiuto.level)
-      
- 
-
-        # owner_board = None
     
 
 def ant_ability(self,owner_board=None):
@@ -73,12 +70,12 @@ def duck_ability(duck,owner_board):
 
 
 def beaver_ability(beaver,owner_board):
-   for unit in owner_board.shop.shop_board.random_n_amount_of_units(2,beaver):
-
+   for unit in owner_board.board.random_n_amount_of_units(2,beaver):
+        
         unit.perma_buff(beaver.level,0) 
    
 def cricket_ability(cricket,player_board):
-    player_board.insert(0,Unit("zombiecircket",1,1))# add it at the start of line in combat 
+    player_board.insert(0,Unit("zombiecircket",cricket.level,cricket.level))# add it at the start of line in combat 
 
 def fish_ability(fish,player_board): 
        print("FISH ABILITY USED")
@@ -89,7 +86,8 @@ def fish_ability(fish,player_board):
 def skippper(self= None,skipper = None):
     return False
 
-
+def pig_ability(pig,player_board):
+    player_board.gold = player_board.gold +pig.level
 
 def start_of_battle(self):
     
@@ -97,13 +95,13 @@ def start_of_battle(self):
 
 def level_up_activataction(self):
     pass # WIP
-def summon_activation(self):
+
     pass #WIP
 ## has a list of summoned units that are check by the horse and are buffed by the horse 
 status = ["buy,sell,faint,none,start_of_battle"]
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
-               "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[skippper,"none"],"mouse":[otter_ability,"buy"],
-               "fish":[fish_ability,"level_up"],"cricket":[otter_ability,"buy"],"horse":[skippper,"buy"]} 
+               "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[pig_ability,"sell"],"mouse":[otter_ability,"buy"],
+               "fish":[fish_ability,"level_up"],"cricket":[cricket_ability,"faint"],"horse":[horse_ability,"summon"],"zombiecircket":[skippper,None]} 
 
 class Unit:
     def __init__(self,Name,Damage,Hp):
@@ -196,6 +194,7 @@ class Unit:
 
             
 class Board:
+    # start board with a draw so snail doesn't give hp
     def __init__(self):
         self.order = []
         self.start_order = []
@@ -371,6 +370,12 @@ class Board:
             unit.update(self)
             
     
+    def activate_summoners(self,target):
+        for unit in self.position_unit_dict.values():
+            if unit != None:
+                if unit.ablity_game_state == "summon":
+                    unit.ability(unit,target)
+                 
 
     def start_of_battle_for_units(self):
         for unit in self.order:
@@ -416,12 +421,13 @@ class Board:
 
         
         self.order = copy.deepcopy(temp_)
-def battle_phase(board1,board2,round_num = None):
+def battle_phase(board1,board2,round_num = None,visible = False):
     # print(board1.show_order(),board2.show_order())
     battle_finished = False
     round_count= 0
     # print("board 1")
-    board1.show_order_display(board2)
+    if visible:
+        board1.show_order_display(board2)
     board1.enemy_board_linking(board2)
     board1.create_board_for_battle()
     board2.create_board_for_battle()
@@ -436,15 +442,16 @@ def battle_phase(board1,board2,round_num = None):
             
             round_count= 1+round_count
             #mid attacl
-        
-            print("======================")
-            print("┃                    ┃")
-            print("┃      round  ",round_count,"    ┃")
-            print("┃                    ┃")
-            print("======================")
+            if visible:
+                print("======================")
+                print("┃                    ┃")
+                print("┃      round  ",round_count,"    ┃")
+                print("┃                    ┃")
+                print("======================")
             
             if round_count ==1:
-                board1.show_order_display(board2)
+                if visible:
+                 board1.show_order_display(board2)
                 board1.start_of_battle_for_units()
                 board2.start_of_battle_for_units()
                 print("START THE ROUND")
@@ -473,12 +480,14 @@ def battle_phase(board1,board2,round_num = None):
             if board1.amount_units() == 0 and  board2.amount_units()!=0:
                     print("board 2 wins")
                     battle_finished = True
-                    board1.show_order_display(board2)
+                    if visible:
+                     board1.show_order_display(board2)
                     # return ("Lost")
             elif board1.amount_units() != 0 and board2.amount_units()==0:
                     print("board 1 wins")
                     battle_finished = True
-                    board1.show_order_display(board2)
+                    if visible:
+                      board1.show_order_display(board2)
                     # return ("Win")
                 
             elif board1.amount_units() == 0 and board2.amount_units()==0:
@@ -486,8 +495,9 @@ def battle_phase(board1,board2,round_num = None):
                     battle_finished = True
                     
                     # return "draw"
-            else:
-                    board1.show_order_display(board2)
+            else:   
+                    if visible:
+                        board1.show_order_display(board2)
                     continue
     else:
          while not battle_finished:
@@ -497,17 +507,18 @@ def battle_phase(board1,board2,round_num = None):
                 
             round_count= 1+round_count
             #mid attacl
-        
-            print("======================")
-            print("┃                    ┃")
-            print("┃      round  ",round_count,"    ┃")
-            print("┃                    ┃")
-            print("======================")
+            if visible:
+                print("======================")
+                print("┃                    ┃")
+                print("┃      round  ",round_count,"    ┃")
+                print("┃                    ┃")
+                print("======================")
             
             if round_count ==1:
               
                 # board1.show_order_display(board2)
-                board1.show_order_display(board2)
+                if visible:
+                 board1.show_order_display(board2)
                 board1.start_of_battle_for_units()
                 board2.start_of_battle_for_units()
                 print("START THE ROUND")
@@ -542,12 +553,14 @@ def battle_phase(board1,board2,round_num = None):
             if board1.amount_units() == 0 and  board2.amount_units()!=0:
                     print("board 2 wins")
                     battle_finished = True
-                    board1.show_order_display(board2)
+                    if visible:
+                        board1.show_order_display(board2)
                     # return ("Lost")
             elif board1.amount_units() != 0 and board2.amount_units()==0:
                     print("board 1 wins")
                     battle_finished = True
-                    board1.show_order_display(board2)
+                    if visible:
+                        board1.show_order_display(board2)
                     # return ("Win")
                 
             elif board1.amount_units() == 0 and board2.amount_units()==0:
@@ -556,7 +569,8 @@ def battle_phase(board1,board2,round_num = None):
                     
                     # return "draw"
             else:
-                    board1.show_order_display(board2)
+                    if visible:
+                      board1.show_order_display(board2)
                 
                     continue
             
@@ -671,8 +685,9 @@ class Unit_store:
                 self.shop_units[index].update_state("buy")
                 self.shop_units[index].owner_board = self.board
                 self.shop_units[index].update(self)
-
-               
+                # self.shop_units[index].update_state("summoned")
+                
+                self.board.activate_summoners(self.shop_units[index])               
                 self.board.position_unit_dict[place]= self.shop_units[index]
                 
                    
@@ -730,8 +745,8 @@ class Unit_store:
         # sold units get a free pass and quickly get their abilities activated rather than having to call the long ability process.
         print(self.board.position_unit_dict[index],"selling is given this to sell") ## make sure to see things 
         if isinstance(self.board.position_unit_dict[index],Unit):
-            if self.board.position_unit_dict[index].Name == "pig": ## just use the normal function
-                self.gold= self.gold + self.board.position_unit_dict[index].level
+            # if self.board.position_unit_dict[index].Name == "pig": ## just use the normal function
+            #     self.gold= self.gold + self.board.position_unit_dict[index].level
             self.gold= self.gold + self.board.position_unit_dict[index].level  
             print(self.board.position_unit_dict[index].Name,"unit being sold")
             self.board.position_unit_dict[index].update_state("sell")
@@ -886,17 +901,28 @@ class Item: # becareful there are many types of abiltiies from buffs to reducing
 # shop.link_to_board(board)
 # shop.generate_units()
 # # shop.reroll()
-# ### TODO perma buffs aren't removed when adding units 
-# shop.gold_override(9999)
-# shop.edit_shop([["fish",2,2],["fish",1,1],["fish",1,1],["duck",1,1]]) ## another is buffed
-# shop.buy(0,4)   
-# shop.buy(1,4)
-# shop.buy(1,3)
-# shop.buy(0,4)   
-# print(board.position_unit_dict[4].base_hp,board.position_unit_dict[4].Base_damage)
-# print(board.position_unit_dict[3].base_hp,board.position_unit_dict[3].Base_damage)
-# # total_hp =battle_phase(board,board, 1) 
 
+# shop.gold_override(9999)
+# shop.edit_shop([["horse",1,1],["pig",1,1],["pig",1,1],["pig",1,1]]) ## another is buffed
+# shop.buy(0,4)   
+# shop.buy(1,2)
+# shop.buy(1,3)
+# shop.buy(0,1)   
+
+board = Board()
+shop= Unit_store()
+board.shop_linking(shop)
+shop.link_to_board(board)
+    
+shop.edit_shop([["beaver",1,1],["beaver",1,1],["beaver",1,1]])
+ 
+shop.buy(0,4)
+shop.buy(1,2)
+shop.buy(0,1)    
+shop.selling(4)
+# total_hp =battle_phase(board,board, 1) 
+total_hp = board.total_of_hp_and_damage_prebattle()
+# print(total_hp)
 # print(total_hp,"total hp_")
 
 
@@ -937,7 +963,6 @@ class CustomTests(unittest.TestCase):
         shop.buy(0,1)    
     
         self.assertEqual(board.total_of_hp_and_damage_prebattle(),[3,5],"Otter test failed")
-
     def test_duck_ability(self):
         board = Board()
         shop= Unit_store()
@@ -955,8 +980,6 @@ class CustomTests(unittest.TestCase):
         #start combat here ? and take the hp total during round 1?
         total_hp =battle_phase(board,board,1) 
         self.assertEqual(board.total_of_hp_and_damage_prebattle(),[2,4],"Duck test failed")
-
-
     def test_mosqutio_ability(self):
         board = Board()
         shop= Unit_store()
@@ -970,7 +993,6 @@ class CustomTests(unittest.TestCase):
         shop.buy(0,3)   
         total_hp =battle_phase(board,board, 1) 
         self.assertEqual(total_hp,[1,1],"Mosqutio test failed")
-
     def test_ant_ability(self):
         board = Board()
         shop= Unit_store()
@@ -1013,7 +1035,53 @@ class CustomTests(unittest.TestCase):
         shop.buy(0,4)   
 
         self.assertEqual([board.position_unit_dict[3].base_hp,board.position_unit_dict[3].Base_damage],[2,2],"fish ability failed")
+    def test_horse_ability(self):
+        board = Board()
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+        # shop.reroll()
+        ### TODO perma buffs aren't removed when adding units 
+        shop.gold_override(9999)
+        shop.edit_shop([["horse",1,1],["pig",1,1],["pig",1,1],["pig",1,1]]) ## another is buffed
+        shop.buy(0,4)   
+        shop.buy(1,2)
+        shop.buy(1,3)
+        shop.buy(0,1)   
+        # 
+        total_hp =battle_phase(board,board, 1) 
+        self.assertEqual(total_hp,[3,5],"horse ability failed")
+    def test_beaver_ability(self):
+        board = Board()
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+    
+        shop.edit_shop([["beaver",1,1],["beaver",1,1],["beaver",1,1]])
+ 
+        shop.buy(0,4)
+        shop.buy(1,2)
+        shop.buy(0,1)    
+        shop.selling(4)
+        self.assertEqual(board.total_of_hp_and_damage_prebattle(),[4,2],"Beaver  test failed")
+    def test_pig_ability(self):
+        board = Board()
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.edit_shop([["pig",1,1],["pig",1,1],["pig",1,1]])
+        shop.buy(0,4)
+        shop.selling(4)
+        self.assertEqual(shop.gold,9,"Pig test failed")
+
+
 # unittest.main() 
+
+
+
+
+
 
 # board_for_combat.show_order_display(board_for_combat)
 # display_board(board_for_combat,board_for_combat)
