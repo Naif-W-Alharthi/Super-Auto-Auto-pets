@@ -577,24 +577,7 @@ def battle_phase(board1,board2,round_num = None,visible = False):
             
     ##
 
-# def leveling_up(leveling_unit,sacrifice_unit):
-#     self.board.position_unit_dict[place].Name == self.shop_units[index].Name and not self.shop_units[index].level == 3:
-#              print("LEVELING UP ")
-#              self.board.position_unit_dict[place].level_amount = self.board.position_unit_dict[place].level_amount  +self.shop_units[index].level_amount +1
-#              self.board.position_unit_dict[place].perma_buff(self.shop_units[index].level,self.shop_units[index].level)
 
-#              if self.board.position_unit_dict[place].level == 1 and self.board.position_unit_dict[place].level_amount ==2 :
-#                  self.board.position_unit_dict[place].update_state("level_up")
-#                  self.board.position_unit_dict[place].update(self.board)
-#                  self.board.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
-
-#                  self.board.position_unit_dict[place].level_amount =self.board.position_unit_dict[place].level_amount - 2
-
-#              if self.board.position_unit_dict[place].level == 2 and self.board.position_unit_dict[place].level_amount >2:
-#                  self.board.position_unit_dict[place].update_state("level_up")
-#                  self.board.position_unit_dict[place].update()
-#                  self.board.position_unit_dict[place].level_amount =self.board.position_unit_dict[place].level_amount - 3
-#                  self.board.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
     
 dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish","cricket","horse"],3:["snail","crab","swan","rat","hedgehog","peacock","flmingo","worm","kangaroo","spider"],5:["dodo","badger","dolphin","giraffe","elephint","camel","rabbit","bull","dog","sheep"]
                ,7:["skunk","hipoo","pufferfish","turtle","squrial","penguin","deer","whale","parrot"],9:["scropion","crocidle","rhino","monkey","armadilo","cow","seal","chciken","shark","turkey"]
