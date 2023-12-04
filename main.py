@@ -75,7 +75,7 @@ def beaver_ability(beaver,owner_board):
         unit.perma_buff(beaver.level,0) 
    
 def cricket_ability(cricket,player_board):
-    player_board.insert(0,Unit("zombiecircket",cricket.level,cricket.level))# add it at the start of line in combat 
+    player_board.order.insert(0,Unit("zombiecircket",cricket.level,cricket.level))# add it at the start of line in combat 
 
 def fish_ability(fish,player_board): 
        print("FISH ABILITY USED")
@@ -585,7 +585,7 @@ dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish",
 
 dict_of_pets_with_stats ={"duck":Unit("duck",2,3),"beaver":Unit("beaver",3,2),"otter":Unit("otter",1,3),"pig":Unit("pig",4,1),"ant":Unit("ant",2,2),"mosqutio":Unit("mosqutio",2,2),
                           "mouse":Unit("mouse",1,2),"fish":Unit("fish",2,3),"cricket":Unit("cricket",1,2),"horse":Unit("horse",2,1)}
-dict_of_items={1:["apple","honey"],3:["pill","meat","cupcake"],5:["salad","onion"],7:["canned food","pear"],9:["pepper","choco","sushi"],11:["steak","melon","mushroom","pizza"]}
+
 class Unit_store:
     def __init__(self):
         self.amount_of_units=3
@@ -816,7 +816,7 @@ class Item_shop:
         self.gold = num
 dict_of_items_ability = {}
 dict_of_items_types= {} 
-
+dict_of_items={1:["apple","honey"],3:["pill","meat","cupcake"],5:["salad","onion"],7:["canned food","pear"],9:["pepper","choco","sushi"],11:["steak","melon","mushroom","pizza"]}
 class Item: # becareful there are many types of abiltiies from buffs to reducing damage once 
     ## link to the player unit board
     def __init__(self,name):
@@ -897,16 +897,14 @@ shop= Unit_store()
 board.shop_linking(shop)
 shop.link_to_board(board)
     
-shop.edit_shop([["beaver",1,1],["beaver",1,1],["beaver",1,1]])
+shop.edit_shop([["cricket",1,1],["beaver",1,1],["beaver",1,1]])
  
 shop.buy(0,4)
-shop.buy(1,2)
-shop.buy(0,1)    
-shop.selling(4)
-# total_hp =battle_phase(board,board, 1) 
+
+total_hp =battle_phase(board,board, 1,"visible")
+print(total_hp,"total") 
 total_hp = board.total_of_hp_and_damage_prebattle()
-# print(total_hp)
-# print(total_hp,"total hp_")
+
 
 
 
@@ -1057,9 +1055,19 @@ class CustomTests(unittest.TestCase):
         shop.buy(0,4)
         shop.selling(4)
         self.assertEqual(shop.gold,9,"Pig test failed")
+    def test_cricket_ability(self):
+        board = Board()
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+            
+        shop.edit_shop([["cricket",1,1],["beaver",1,1],["beaver",1,1]])
+        
+        shop.buy(0,4)
 
-
-# unittest.main() 
+        total_hp =battle_phase(board,board, 1)
+        self.assertEqual(total_hp,[1,1],"failed cricket test")
+unittest.main() 
 
 
 
