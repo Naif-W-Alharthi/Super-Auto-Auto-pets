@@ -5,16 +5,9 @@
 import unittest
 
 ### TODO:
-#horse ability
-#unit testing 
-#Cricket ability 
-#Items
-#Apple
-#Honey 
-#level up
-#convert rat and pig to beaver function
+
 #check for attack order exactly
-#convert units in a dictonary of abilties to states and see if that state in the lookup table 
+
 from numpy.random import seed
 from numpy.random import randint
 import numpy as np
@@ -61,8 +54,11 @@ def mouse_ability(self,owner_board):
     if self.level ==1:
        owner_board.item_store.add_item(Item("apple",0))
        print("free apple ")
+       #"Better Apple":[apple_1_ability],"Best Apple"
     elif self.level == 2:
-         Item("better_apple_1",0)
+         owner_board.item_store.add_item(Item("Better Apple",0))
+    else:
+        owner_board.item_store.add_item(Item("Best Apple",0))
 def duck_ability(duck,owner_board):
     
     for unit in owner_board.shop_units:
@@ -94,9 +90,6 @@ def start_of_battle(self):
     
     return  self.owner_board.state == "start_of_battle"
 
-def level_up_activataction(self):
-    pass # WIP
-
     pass #WIP
 ## has a list of summoned units that are check by the horse and are buffed by the horse 
 status = ["buy,sell,faint,none,start_of_battle"]
@@ -109,7 +102,7 @@ class Unit:
     def __init__(self,Name,Damage,Hp):
         self.Name = Name
         self.base_hp = Hp
-        self.perma_buff_bucket= []
+        self.perma_buff_bucket= [0,0]
         self.Base_damage = Damage
         # x.ability_flag and not x.activated_flag
         self.Cost =3 
@@ -132,12 +125,10 @@ class Unit:
 
     def update_state(self,state):
         self.state = state
-    def increase_level(self):
-        self.level  ## WIP
+    def increase_level(self,level):
+        self.level  = level## WIP
     
-    def dict_for_activation(self):
-        # save this for when we try to find 
-        return {self.ablity_game_state:self.ability}
+
 
     def update(self,owner_board):
         # update only makes the ability in que be ware of this
@@ -166,6 +157,8 @@ class Unit:
         # print("perma_buffing")
         self.base_hp = self.base_hp+Hp
         self.Base_damage=self.Base_damage + Damage
+        self.perma_buff_bucket[0] =  self.perma_buff_bucket[0]+Hp
+        self.perma_buff_bucket[1] =  self.perma_buff_bucket[1]+Damage
     def temp_buff(self,Damage,Hp):
         # print(Hp,Damage,"temp buff")
         self.base_hp = self.base_hp+Hp
@@ -223,34 +216,35 @@ class Board:
              if self.position_unit_dict[end].Name != self.position_unit_dict[origin].Name:
                  print("Units is already in the space")
 
-                
-             if self.position_unit_dict[end].Name  == self.position_unit_dict[origin].Name and not self.position_unit_dict[end].level == 3:
-                # self.position_unit_dict[place].Name == self.shop_units[index].Name and not self.shop_units[index].level == 3:
+                ##DRY TRY TO MAKE A FUNCTION 
+             if  self.position_unit_dict[end].Name == self.position_unit_dict[origin].Name and not self.position_unit_dict[origin].level == 3:
                 print("LEVELING UP ")
-                self.position_unit_dict[end].level_amount = self.board.position_unit_dict[origin].level_amount  +self.position_unit_dict[end].level_amount +1
-                self.position_unit_dict[end].perma_buff(self.position_unit_dict[origin],self.position_unit_dict[end])
+                self.position_unit_dict[end].level_amount = self.position_unit_dict[end].level_amount  +self.position_unit_dict[origin].level_amount +1
+                self.position_unit_dict[end].perma_buff(self.position_unit_dict[origin].level_amount +1,self.position_unit_dict[origin].level_amount + 1) 
 
-                if self.position_unit_dict[origin].level == 1 and self.board.position_unit_dict[origin].level_amount ==2 :
-                    self.position_unit_dict[origin].update_state("level_up")
-                    self.position_unit_dict[origin].update()
-                    self.position_unit_dict[origin].level = self.board.position_unit_dict[origin].level+1
+                if self.position_unit_dict[end].level == 1 and self.position_unit_dict[end].level_amount ==2 :
+                    print("LEVEL 2 ")
+                    self.position_unit_dict[end].update_state("level_up")
+                    self.position_unit_dict[end].update(self)
+                    self.position_unit_dict[end].level = self.position_unit_dict[end].level+1
+                    self.position_unit_dict[end].level_amount =self.position_unit_dict[end].level_amount - 2
 
-                    self.position_unit_dict[origin].level_amount =self.board.position_unit_dict[origin].level_amount - 2
-
-                if self.position_unit_dict[origin].level == 2 and self.board.position_unit_dict[origin].level_amount >2:
-                    self.position_unit_dict[origin].update_state("level_up")
-                    self.position_unit_dict[origin].update()
-                    self.position_unit_dict[origin].level_amount =self.board.position_unit_dict[origin].level_amount - 3
-                    self.position_unit_dict[origin].level = self.board.position_unit_dict[origin].level+1
+                if self.position_unit_dict[end].level == 2 and self.position_unit_dict[end].level_amount >2:
+                    self.position_unit_dict[end].update_state("level_up")
+                    self.position_unit_dict[end].update()
+                    self.position_unit_dict[end].level_amount =self.position_unit_dict[end].level_amount - 3
+                    self.position_unit_dict[end].level = self.position_unit_dict[end].level+1
+             self.position_unit_dict[origin] = None
 
             
     def show_order(self):
-        # for position,units in enumerate(self.order[::-1]):
-        #     self.order.append(units)
-            # print(position,units.Name, unitsround_hp, units.Base_damage)
+        for position in [0,1,2,3,4]:
+            units = self.position_unit_dict[position]
+            if units != None:
+               print(position,units.Name, units.base_hp, units.Base_damage)
         # print(self.order,"show order")
-        # print(self.order[0])
-        pass
+        
+        
     
     def amount_units(self):
         return len(self.order)
@@ -290,7 +284,7 @@ class Board:
             total_hp =  total_hp +unit.base_hp 
             total_damage =  total_damage +unit.Base_damage ####### nOOOOOOOOOOOOOOOOOOOOOOOOOOOOONnnnnnnnnnnnnnnnnnnnnnnnn
         return [total_damage,total_hp]
-
+    
     def show_order_display(self,other_board = None):
         
         base_upper=" ---------"
@@ -378,6 +372,7 @@ class Board:
                 if unit.ablity_game_state == "summon":
                     unit.ability(unit,target)
                  
+    
 
     def start_of_battle_for_units(self):
         for unit in self.order:
@@ -682,12 +677,15 @@ class Unit_store:
 
                 self.shop_units= np.delete(self.shop_units,index) 
                 # print("bought the ",self.shop_units[0].Name,place,"bought test")
+
+                ##DRY TRY TO MAKE A FUNCTION 
         elif  self.board.position_unit_dict[place].Name == self.shop_units[index].Name and not self.shop_units[index].level == 3:
              print("LEVELING UP ")
              self.board.position_unit_dict[place].level_amount = self.board.position_unit_dict[place].level_amount  +self.shop_units[index].level_amount +1
              self.board.position_unit_dict[place].perma_buff(self.shop_units[index].level,self.shop_units[index].level)
 
              if self.board.position_unit_dict[place].level == 1 and self.board.position_unit_dict[place].level_amount ==2 :
+                 print("LEVEL 2 ")
                  self.board.position_unit_dict[place].update_state("level_up")
                  self.board.position_unit_dict[place].update(self.board)
                  self.board.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
@@ -775,8 +773,11 @@ def honey_ability(target):
         
         print("honey ability worked")
 def apple_1_ability(target):
-    print("apple 1 ")
-dict_of_items_ability = {"apple":[apple_ability],"apple_1":[apple_1_ability],"honey":[honey_ability]}
+    target.perma_buff(2,2)
+def apple_2_ability(target):
+    target.perma_buff(3,3)
+
+dict_of_items_ability = {"apple":[apple_ability],"Better Apple":[apple_1_ability],"Best Apple":[apple_2_ability],"honey":[honey_ability]}
 class Item: # becareful there are many types of abiltiies from buffs to reducing damage once 
     ## link to the player unit board
     def __init__(self,name,cost = 3):
@@ -794,7 +795,7 @@ class Item: # becareful there are many types of abiltiies from buffs to reducing
 
 
 
-dict_of_items_with_stats = {"apple": Item("apple"), "apple_1":Item("apple_1",2),"honey":Item("honey") }
+dict_of_items_with_stats = {"apple": Item("apple"), "Better Apple":Item("Better Apple"),"Best Apple":("Better Apple"),"honey":Item("honey") }
 
 dict_of_items={1:["apple","honey"],3:["pill","meat","cupcake"],5:["salad","onion"],7:["canned food","pear"],9:["pepper","choco","sushi"],11:["steak","melon","mushroom","pizza"]}
 class Item_shop:
@@ -941,7 +942,6 @@ class Item_shop:
 # shop.generate_units()
 # # shop.reroll()
 
-# shop.gold_override(9999)
 # shop.edit_shop([["horse",1,1],["pig",1,1],["pig",1,1],["pig",1,1]]) ## another is buffed
 # shop.buy(0,4)   
 # shop.buy(1,2)
@@ -954,18 +954,34 @@ item_shop= Item_shop(shop)
 board.shop_linking(shop)
 shop.link_to_board(board)
 
+shop.gold_override(9999)
 
-shop.edit_shop([["mouse",1,1],["beaver",1,1],["beaver",1,1]])
+shop.edit_shop([["mouse",1,1],["pig",2,2],["pig",2,2],["pig",2,2],["pig",2,2],["pig",2,2]])
  
 shop.buy(0,4)
 # shop.selling(4)
 
 shop.selling(4)
-shop.buy(1,4)
+# shop.buy(1,4)
 item_shop.show_items()
-item_shop.buy(1,4)
-total_hp =battle_phase(board,board, 1,"visible")
-print(total_hp,"total") 
+# item_shop.buy(1,4)
+shop.buy(0,4)
+shop.buy(0,3)
+shop.buy(0,3)
+
+
+# item_shop.buy(1,3)
+board.swap_unit_place(4,3)
+shop.buy(0,2)
+shop.buy(0,2)
+board.swap_unit_place(2,3)
+board.show_order()
+# board.show_order_display(board)
+# total_hp =battle_phase(board,board, 1,6)
+# print(board.position_unit_dict[4].base_hp)
+# print(total_hp,"total") 
+
+
 # total_hp = board.total_of_hp_and_damage_prebattle()
 
 
@@ -1142,15 +1158,15 @@ class CustomTests(unittest.TestCase):
         
         shop.buy(0,4)
         # shop.selling(4)
-
+        # board.position_unit_dict[4].increase_level(3) #testing level 3 just in case they all work the same either way 
         shop.selling(4)
         shop.buy(1,4)
         item_shop.show_items()
         item_shop.buy(1,4)
         total_hp =board.total_of_hp_and_damage_prebattle()
-        self.assertEqual(total_hp,[2,2],"failed cricket test")
+        self.assertEqual(total_hp,[2,2],"failed mouse test")
         
-unittest.main() 
+# unittest.main() 
 
 
 
