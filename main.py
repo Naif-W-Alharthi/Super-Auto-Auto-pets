@@ -794,7 +794,7 @@ class Item: # becareful there are many types of abiltiies from buffs to reducing
 
 
 
-dict_of_items_with_stats = {"apple": Item("apple"), "apple_1":Item("apple_1",2) }
+dict_of_items_with_stats = {"apple": Item("apple"), "apple_1":Item("apple_1",2),"honey":Item("honey") }
 
 dict_of_items={1:["apple","honey"],3:["pill","meat","cupcake"],5:["salad","onion"],7:["canned food","pear"],9:["pepper","choco","sushi"],11:["steak","melon","mushroom","pizza"]}
 class Item_shop:
@@ -839,12 +839,12 @@ class Item_shop:
         # print(self.item_list) 
         for item in self.item_list:                      
             
-            new_unit = dict_of_items_ability[item]
+            new_item = dict_of_items_with_stats[item]
           
             
             # self.shop_units = np.insert(self.player_units,index,new_unit)
             
-            self.temp_shop.append(new_unit)
+            self.temp_shop.append(new_item)
            
             # self.shop_units= np.delete(self.shop_units,index)
             # np.delete(self.shop_units,index)
@@ -961,9 +961,11 @@ shop.buy(0,4)
 # shop.selling(4)
 
 shop.selling(4)
+shop.buy(1,4)
 item_shop.show_items()
-# total_hp =battle_phase(board,board, 1,"visible")
-# print(total_hp,"total") 
+item_shop.buy(1,4)
+total_hp =battle_phase(board,board, 1,"visible")
+print(total_hp,"total") 
 # total_hp = board.total_of_hp_and_damage_prebattle()
 
 
