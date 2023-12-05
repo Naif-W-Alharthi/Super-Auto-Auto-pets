@@ -1130,7 +1130,27 @@ class CustomTests(unittest.TestCase):
 
         total_hp =battle_phase(board,board, 1)
         self.assertEqual(total_hp,[1,1],"failed cricket test")
-# unittest.main() 
+    def test_mouse_ability(self):
+        board = Board()
+        shop= Unit_store()
+        item_shop= Item_shop(shop)
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+
+
+        shop.edit_shop([["mouse",1,1],["beaver",1,1],["beaver",1,1]])
+        
+        shop.buy(0,4)
+        # shop.selling(4)
+
+        shop.selling(4)
+        shop.buy(1,4)
+        item_shop.show_items()
+        item_shop.buy(1,4)
+        total_hp =board.total_of_hp_and_damage_prebattle()
+        self.assertEqual(total_hp,[2,2],"failed cricket test")
+        
+unittest.main() 
 
 
 
