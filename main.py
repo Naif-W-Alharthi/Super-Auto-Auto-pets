@@ -25,12 +25,7 @@ class match_env:
         pass
     #turn is something adding up as a count 
 
-def apple_ability(target,owener_board):
-        ## Needs testing
-        owener_board[target].perma_buff(1,1)
 
-        
-        print("apple ability worked")
 
     
 # def board_cleanup(board1,board2):
@@ -60,8 +55,14 @@ def ant_ability(self,owner_board=None):
         owner_board.order[owner_board.random_single_unit()].temp_buff(buff_amount,buff_amount)
         
 
-def rat_ability(self,owner_board):
-    shop_board.append()
+def mouse_ability(self,owner_board):
+    
+    print("MOUSE ABILITY WORKING")
+    if self.level ==1:
+       owner_board.item_store.add_item(Item("apple",0))
+       print("free apple ")
+    elif self.level == 2:
+         Item("better_apple_1",0)
 def duck_ability(duck,owner_board):
     
     for unit in owner_board.shop_units:
@@ -100,14 +101,15 @@ def level_up_activataction(self):
 ## has a list of summoned units that are check by the horse and are buffed by the horse 
 status = ["buy,sell,faint,none,start_of_battle"]
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
-               "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[pig_ability,"sell"],"mouse":[otter_ability,"buy"],
+               "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[pig_ability,"sell"],"mouse":[mouse_ability,"sell"],
                "fish":[fish_ability,"level_up"],"cricket":[cricket_ability,"faint"],"horse":[horse_ability,"summon"],"zombiecircket":[skippper,None]} 
 
 class Unit:
+    ## add cap to 50 hp and 50 damage
     def __init__(self,Name,Damage,Hp):
         self.Name = Name
         self.base_hp = Hp
-      
+        self.perma_buff_bucket= []
         self.Base_damage = Damage
         # x.ability_flag and not x.activated_flag
         self.Cost =3 
@@ -592,7 +594,7 @@ class Unit_store:
         self.units_pool= np.array([])
         self.turn = 1
         self.gold = 10
-        
+    
         self.shop_units=list()
         self.add_unitpool()
         self.temp_shop = []
@@ -759,18 +761,54 @@ class Unit_store:
     def gold_override(self,num):
             #dev tool to enable testing
             self.gold = num
+def apple_ability(target):
+        ## Needs testing
+        target.perma_buff(1,1)
+
+        
+        print("apple ability worked")
+
+def honey_ability(target):
+        ## Needs testing
+        target.owner_board.position_unit_dict[target].perk = "Honey"## find a way to apply the honey perk
+
+        
+        print("honey ability worked")
+def apple_1_ability(target):
+    print("apple 1 ")
+dict_of_items_ability = {"apple":[apple_ability],"apple_1":[apple_1_ability],"honey":[honey_ability]}
+class Item: # becareful there are many types of abiltiies from buffs to reducing damage once 
+    ## link to the player unit board
+    def __init__(self,name,cost = 3):
+        self.name = name
+        self.ability = dict_of_items_ability[name][0]
+
+        self.cost = cost
+    def change_cost(self,new_cost):
+        self.cost = new_cost
+
+    def use_ability(self,target):
+        self.ability(target)
+    
+        
+
+
+
+dict_of_items_with_stats = {"apple": Item("apple"), "apple_1":Item("apple_1",2) }
+
+dict_of_items={1:["apple","honey"],3:["pill","meat","cupcake"],5:["salad","onion"],7:["canned food","pear"],9:["pepper","choco","sushi"],11:["steak","melon","mushroom","pizza"]}
 class Item_shop:
     ## add freezing, refreshing, generating 
     def __init__(self,unit_store):
         self.linked_shop = unit_store
-        
+        unit_store.item_store = self
         self.turn = unit_store.turn # might cause issues 
         self.item_pool = np.array([])
         self.item_list=list()
-        self.amount_of_items = 2 
+        self.amount_of_items = 1 
         self.add_item_pool()
         self.temp_shop = []
-  
+        self.generate_items()
     def increase_turn(self):
         self.turn=self.turn+1
         if self.turn ==5 or self.turn == 9:
@@ -780,17 +818,28 @@ class Item_shop:
 
     def add_item_pool(self):
         self.item_pool=  np.concatenate((self.item_pool,dict_of_items[self.turn]))
-        
-    def generate_items(self):
-        generated_units = np.random.randint((self.turn-1//2)*10,size=self.amount_of_items)
-        self.temp_shop = []
-        
-        
-        self.item_list=self.item_pool[generated_units]
+    
+    def buy(self,index,target):
+        print(self.item_list[index],"BUYGIN")
+        if index < len(self.item_list):
+      
+            if self.item_list[index] != None :
        
-        for unit in self.shop_units:                      
+              if self.item_list[index].cost <=  self.linked_shop.gold:
+                  self.item_list[index].use_ability(self.linked_shop.board.position_unit_dict[target])
+
+            # activate the item
+    def generate_items(self):
+        self.item_list = np.random.choice(self.item_pool,size=self.amount_of_items,replace=False)
+        
+        
+        
+        
+       
+        # print(self.item_list) 
+        for item in self.item_list:                      
             
-            new_unit = dict_of_pets_with_stats[unit]
+            new_unit = dict_of_items_ability[item]
           
             
             # self.shop_units = np.insert(self.player_units,index,new_unit)
@@ -800,7 +849,7 @@ class Item_shop:
             # self.shop_units= np.delete(self.shop_units,index)
             # np.delete(self.shop_units,index)
             # self.player_units = np.insert(self.player_units,index,new_unit)
-        self.shop_units = copy.deepcopy(self.temp_shop)
+        self.item_list = copy.deepcopy(self.temp_shop)
         self.temp_shop=[]#empty to avoid memory issues 
 
     def reroll(self):
@@ -811,28 +860,35 @@ class Item_shop:
             
         else:
             print(self.gold)
-    def gold_override(self,num):
+    def add_item(self,item):
         #dev tool to enable testing
-        self.gold = num
-dict_of_items_ability = {}
-dict_of_items_types= {} 
-dict_of_items={1:["apple","honey"],3:["pill","meat","cupcake"],5:["salad","onion"],7:["canned food","pear"],9:["pepper","choco","sushi"],11:["steak","melon","mushroom","pizza"]}
-class Item: # becareful there are many types of abiltiies from buffs to reducing damage once 
-    ## link to the player unit board
-    def __init__(self,name):
-        self.name = name
-        self.ability = dict_of_items_ability[name]
-        self.type =  dict_of_items_types[name]
-        self.cost = 3
-    def change_cost(self,new_cost):
-        self.cost = new_cost
+        self.item_list.append(item)
+    def show_items(self):
+        print("Showing items")
+        print(self.item_list)
+  
+    def edit_shop(self,shop):
+        self.temp_shop = []
+        self.shop_units =  shop
+        for item in shop:
+            # damage,hp  = dict_of_pets_with_stats[unit]
+            
+          
+            
+             
+            self.temp_shop.append(dict_of_items_with_stats[item])
+           
+            # self.shop_units= np.delete(self.shop_units,index)
+            # np.delete(self.shop_units,index)
+            # self.player_units = np.insert(self.player_units,index,new_unit)
+        self.item_list = copy.deepcopy(self.temp_shop)
+        print(self.shop_units,"edit _ shop ")
+# def honey_ability(honey,board):
 
-    def use_ability(self,target):
-        self.ability(shop_board[target])
-    
-        
 
-        
+
+
+
 # def display_board(board1,board2):
     # while add loops here for gods sake 
 
@@ -894,16 +950,21 @@ class Item: # becareful there are many types of abiltiies from buffs to reducing
 
 board = Board()
 shop= Unit_store()
+item_shop= Item_shop(shop)
 board.shop_linking(shop)
 shop.link_to_board(board)
-    
-shop.edit_shop([["cricket",1,1],["beaver",1,1],["beaver",1,1]])
+
+
+shop.edit_shop([["mouse",1,1],["beaver",1,1],["beaver",1,1]])
  
 shop.buy(0,4)
+# shop.selling(4)
 
-total_hp =battle_phase(board,board, 1,"visible")
-print(total_hp,"total") 
-total_hp = board.total_of_hp_and_damage_prebattle()
+shop.selling(4)
+item_shop.show_items()
+# total_hp =battle_phase(board,board, 1,"visible")
+# print(total_hp,"total") 
+# total_hp = board.total_of_hp_and_damage_prebattle()
 
 
 
@@ -1067,7 +1128,7 @@ class CustomTests(unittest.TestCase):
 
         total_hp =battle_phase(board,board, 1)
         self.assertEqual(total_hp,[1,1],"failed cricket test")
-unittest.main() 
+# unittest.main() 
 
 
 
