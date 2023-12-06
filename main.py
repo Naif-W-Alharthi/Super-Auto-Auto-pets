@@ -5,8 +5,8 @@
 import unittest
 
 ### TODO:
+#we activate summoning using a function for now consider finding an efficent way to do this ?
 
-#check for attack order exactly
 
 from numpy.random import seed
 from numpy.random import randint
@@ -23,6 +23,7 @@ class match_env:
     
 # def board_cleanup(board1,board2):
 #     board1
+
 ##stack order
 #1)hurt (alive units get pirio)
 #2)faint (by which one dies first) (tie is broken by left to right on player side?)
@@ -36,18 +37,12 @@ def otter_ability(otter,owner_board):
 
         unit.perma_buff(0,1) 
     
-    ##when bought give random ally +1*lvl hp 
-        
+    ##when bought give random ally +1*lvl hp     
 def mosquito_ability(mosqiuto,owner_board):
         owner_board.order[owner_board.random_single_unit()].take_damage(mosqiuto.level)
-    
-
 def ant_ability(self,owner_board=None):
-   
         buff_amount = self.level
-        owner_board.order[owner_board.random_single_unit()].temp_buff(buff_amount,buff_amount)
-        
-
+        owner_board.order[owner_board.random_single_unit()].temp_buff(buff_amount,buff_amount)      
 def mouse_ability(self,owner_board):
     
     print("MOUSE ABILITY WORKING")
@@ -64,16 +59,13 @@ def duck_ability(duck,owner_board):
     for unit in owner_board.shop_units:
         unit.perma_buff(0,duck.level)
         print("duck buffed" ,unit.Name)
-
-
 def beaver_ability(beaver,owner_board):
    for unit in owner_board.board.random_n_amount_of_units(2,beaver):
         
         unit.perma_buff(beaver.level,0) 
-   
 def cricket_ability(cricket,player_board):
     player_board.order.insert(0,Unit("zombiecircket",cricket.level,cricket.level))# add it at the start of line in combat 
-
+    cricket.owner_board.activate_summoners(cricket.owner_board.order[0])  
 def fish_ability(fish,player_board): 
        print("FISH ABILITY USED")
        for unit in player_board.random_n_amount_of_units(2,fish):
@@ -95,7 +87,7 @@ def start_of_battle(self):
 status = ["buy,sell,faint,none,start_of_battle"]
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[pig_ability,"sell"],"mouse":[mouse_ability,"sell"],
-               "fish":[fish_ability,"level_up"],"cricket":[cricket_ability,"faint"],"horse":[horse_ability,"summon"],"zombiecircket":[skippper,None]} 
+               "fish":[fish_ability,"level_up"],"cricket":[cricket_ability,"faint"],"horse":[horse_ability,"summon"],"zombiecircket":[skippper,None],"bee":[skippper,None]} 
 
 class Unit:
     ## add cap to 50 hp and 50 damage
@@ -128,7 +120,11 @@ class Unit:
     def increase_level(self,level):
         self.level  = level## WIP
     
-
+#         self.owner = target
+        # target.perk = self.name
+        # target.perk_activation = dict_of_items_ability[self.name][1]
+        # target.perk_ability = self.ability = dict_of_items_ability[self.name][0]
+        
 
     def update(self,owner_board):
         # update only makes the ability in que be ware of this
@@ -140,6 +136,9 @@ class Unit:
         if (self.state==self.ablity_game_state) and not self.ability_used:
             self.ability(self,self.owner_board) ## We must send the board to avoid any issues later on 
             self.ability_used = True
+        if self.perk !=None:
+         if ( self.state == self.perk_activation):
+             self.perk_ability(self)
             # print("update worked")
     def attack(self,enemy):
         enemy.base_hp = enemy.base_hp - self.Base_damage
@@ -368,7 +367,7 @@ class Board:
     
     def activate_summoners(self,target):
         for unit in self.position_unit_dict.values():
-            if unit != None:
+            if unit != None and unit.base_hp < 1:
                 if unit.ablity_game_state == "summon":
                     unit.ability(unit,target)
                  
@@ -683,7 +682,7 @@ class Unit_store:
              print("LEVELING UP ")
              self.board.position_unit_dict[place].level_amount = self.board.position_unit_dict[place].level_amount  +self.shop_units[index].level_amount +1
              self.board.position_unit_dict[place].perma_buff(self.shop_units[index].level,self.shop_units[index].level)
-
+             self.shop_units= np.delete(self.shop_units,index) 
              if self.board.position_unit_dict[place].level == 1 and self.board.position_unit_dict[place].level_amount ==2 :
                  print("LEVEL 2 ")
                  self.board.position_unit_dict[place].update_state("level_up")
@@ -699,6 +698,7 @@ class Unit_store:
                  self.board.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
         else:
              print("UNIT IS ALREADY IN THAT PLACE")
+        
     
     def add_unitpool(self):
         self.units_pool=  np.concatenate((self.units_pool,dict_of_pets[self.turn]))
@@ -765,19 +765,19 @@ def apple_ability(target):
 
         
         print("apple ability worked")
-
-def honey_ability(target):
-        ## Needs testing
-        target.owner_board.position_unit_dict[target].perk = "Honey"## find a way to apply the honey perk
-
-        
-        print("honey ability worked")
 def apple_1_ability(target):
     target.perma_buff(2,2)
 def apple_2_ability(target):
     target.perma_buff(3,3)
+def honey_ability(target):
+        ## Needs testing
+        target.owner_board.order.insert(0,Unit("bee",1,1))# add it at the start of line in combat 
+        target.owner_board.activate_summoners(target.owner_board.order[0])  
+        
+        print("honey ability worked")
+    
 
-dict_of_items_ability = {"apple":[apple_ability],"Better Apple":[apple_1_ability],"Best Apple":[apple_2_ability],"honey":[honey_ability]}
+dict_of_items_ability = {"apple":[apple_ability,None],"Better Apple":[apple_1_ability,None],"Best Apple":[apple_2_ability,None],"honey":[honey_ability,"faint"]}
 class Item: # becareful there are many types of abiltiies from buffs to reducing damage once 
     ## link to the player unit board
     def __init__(self,name,cost = 3):
@@ -789,10 +789,21 @@ class Item: # becareful there are many types of abiltiies from buffs to reducing
         self.cost = new_cost
 
     def use_ability(self,target):
-        self.ability(target)
-    
-        
+        if dict_of_items_ability[self.name][1]  == None:
+            self.ability(target)
+        else:
+            self.give_perk(target)
 
+   
+    def give_perk(self,target):
+         ## Carry over perks otherwise bugs will happen
+        self.owner = target
+        target.perk = self.name # removing to save some space form the str
+        target.perk_activation = dict_of_items_ability[self.name][1]
+        target.perk_ability = self.ability = dict_of_items_ability[self.name][0]
+        
+        print("given_perk")
+    
 
 
 dict_of_items_with_stats = {"apple": Item("apple"), "Better Apple":Item("Better Apple"),"Best Apple":("Better Apple"),"honey":Item("honey") }
@@ -956,26 +967,30 @@ shop.link_to_board(board)
 
 shop.gold_override(9999)
 
-shop.edit_shop([["mouse",1,1],["pig",2,2],["pig",2,2],["pig",2,2],["pig",2,2],["pig",2,2]])
- 
+shop.edit_shop([["horse",1,1],["pig",2,2]])
+  
+shop.buy(0,1)
 shop.buy(0,4)
+item_shop.show_items()
+item_shop.edit_shop(["honey"])
+item_shop.buy(0,1)
+
+total_hp =battle_phase(board,board, 2,6)
+
+print(total_hp,"total") 
 # shop.selling(4)
 
-shop.selling(4)
+
 # shop.buy(1,4)
-item_shop.show_items()
-# item_shop.buy(1,4)
-shop.buy(0,4)
-shop.buy(0,3)
-shop.buy(0,3)
+
+
+
 
 
 # item_shop.buy(1,3)
-board.swap_unit_place(4,3)
-shop.buy(0,2)
-shop.buy(0,2)
-board.swap_unit_place(2,3)
-board.show_order()
+
+
+
 # board.show_order_display(board)
 # total_hp =battle_phase(board,board, 1,6)
 # print(board.position_unit_dict[4].base_hp)
@@ -985,7 +1000,7 @@ board.show_order()
 # total_hp = board.total_of_hp_and_damage_prebattle()
 
 
-
+# honey
 
 
 # shop.selling(1)
