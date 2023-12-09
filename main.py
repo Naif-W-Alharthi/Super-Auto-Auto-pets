@@ -28,6 +28,14 @@ class match_env:
 #1)hurt (alive units get pirio)
 #2)faint (by which one dies first) (tie is broken by left to right on player side?)
 # ### TODO perma buffs aren't removed when adding units 
+def snail_ability(snail,target):
+     
+        target.perma_buff(0,snail.level)
+def turkey_ability(turkey,target):
+     if turkey.base_hp >0:
+    
+        
+        target.temp_buff(2*turkey.level,3*turkey.level)
 def horse_ability(horse,target):
      if horse.base_hp >0:
     
@@ -88,7 +96,7 @@ def pig_ability(pig,player_board):
 status = ["buy","sell","faint","none","start_of_battle"]
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[pig_ability,"sell"],"mouse":[mouse_ability,"sell"],
-               "fish":[fish_ability,"level_up"],"cricket":[cricket_ability,"faint"],"horse":[horse_ability,"summon"],"zombiecircket":[skippper,None],"bee":[skippper,None]} 
+               "fish":[fish_ability,"level_up"],"cricket":[cricket_ability,"faint"],"horse":[horse_ability,"summon"],"zombiecircket":[skippper,None],"bee":[skippper,None], "turkey" :[turkey_ability,"summon"]} 
 
 class Unit:
     ## add cap to 50 hp and 50 damage
@@ -172,14 +180,6 @@ class Unit:
         self.Base_damage=self.Base_damage + Damage
         self.temp_buff_hp = self.temp_buff_hp+ Hp
         self.temp_buff_damage=self.temp_buff_damage +Damage
-    # def activation_condition(self,function):
-    #     # print(self.Name)
-    #     # print(function(self),"function check")
-        
-    #     if function:
-    #             self.ability_flag= True
-
-        
 
     def round_end(self):
         self.alive = True
@@ -205,11 +205,12 @@ class Board:
         self.enemy_board = None
         self.shop = None
         self.targetable_units =[]
-        self.temp_list_for_summs=[]
+        
+
             # self.player_units= ["0","1","2","3","4"]##player units 
   
         self.position_unit_dict = {0:None,1:None,2:None,3:None,4:None}
-
+        self.last_round_lost = False
     # def summon(self,unit):
     #     self.order.append(0,unit)
     #     for k in self.order(): 
@@ -545,7 +546,7 @@ dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish",
                ,11:["leopard","boar","tiger","wolvrine","gorilla","dragon","mamotth","cat","snake","fly"]}
 
 dict_of_pets_with_stats ={"duck":Unit("duck",2,3),"beaver":Unit("beaver",3,2),"otter":Unit("otter",1,3),"pig":Unit("pig",4,1),"ant":Unit("ant",2,2),"mosqutio":Unit("mosqutio",2,2),
-                          "mouse":Unit("mouse",1,2),"fish":Unit("fish",2,3),"cricket":Unit("cricket",1,2),"horse":Unit("horse",2,1)}
+                          "mouse":Unit("mouse",1,2),"fish":Unit("fish",2,3),"cricket":Unit("cricket",1,2),"horse":Unit("horse",2,1),"turkey":Unit("turkey",3,4)}
 
 class Unit_store:
     def __init__(self):
@@ -992,6 +993,7 @@ class Item_shop:
 # print(total_hp,"tot")
 
 
+
 # shop= Unit_store()
 # shop.generate_units()
 # # shop.reroll()
@@ -1178,8 +1180,24 @@ class CustomTests(unittest.TestCase):
 
         total_hp =battle_phase(board,board,1,6)   
         self.assertEqual(total_hp,[3,4],"failed honey test") 
-
-unittest.main() 
+    def test_turkey_abitlity(self):
+        board = Board()
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+                # shop.reroll()
+                ### TODO perma buffs aren't removed when adding units 
+        shop.gold_override(9999)
+        shop.edit_shop([["turkey",1,1],["pig",1,1],["pig",1,1],["pig",1,1]]) ## another is buffed
+        shop.buy(0,4)   
+        shop.buy(1,2)
+        shop.buy(1,3)
+        shop.buy(0,1)   
+                # 
+        total_hp =battle_phase(board,board, 1) 
+        self.assertEqual(total_hp,[7,9],"failed honey test") 
+# unittest.main() 
 
 
 
