@@ -28,9 +28,17 @@ class match_env:
 #1)hurt (alive units get pirio)
 #2)faint (by which one dies first) (tie is broken by left to right on player side?)
 # ### TODO perma buffs aren't removed when adding units 
-def snail_ability(snail,target):
-     
-        target.perma_buff(0,snail.level)
+    
+def crab_ability(crab,board):
+    highest_hp = -2
+    for unit in board.order:
+        if unit != crab:
+                if unit.base_hp> highest_hp:
+                    highest_hp = unit.base_hp * (0.5*crab.level)
+def snail_ability(snail,board):
+        if board.last_round_lost:
+            for target in board.position_unit_dict.values():
+             target.perma_buff(0,snail.level)
 def turkey_ability(turkey,target):
      if turkey.base_hp >0:
     
@@ -66,10 +74,8 @@ def mouse_ability(self,owner_board):
     else:
         owner_board.item_store.add_item(Item("Best Apple",0))
 def duck_ability(duck,owner_board):
-    
     for unit in owner_board.shop_units:
         unit.perma_buff(0,duck.level)
-       
 def beaver_ability(beaver,owner_board):
    for unit in owner_board.board.random_n_amount_of_units(2,beaver):
         
@@ -93,7 +99,7 @@ def pig_ability(pig,player_board):
 
     pass #WIP
 ## has a list of summoned units that are check by the horse and are buffed by the horse 
-status = ["buy","sell","faint","none","start_of_battle"]
+status = ["buy","sell","faint","none","start_of_battle","start_of_turn",]
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[pig_ability,"sell"],"mouse":[mouse_ability,"sell"],
                "fish":[fish_ability,"level_up"],"cricket":[cricket_ability,"faint"],"horse":[horse_ability,"summon"],"zombiecircket":[skippper,None],"bee":[skippper,None], "turkey" :[turkey_ability,"summon"]} 
@@ -742,7 +748,6 @@ def honey_ability(target):
         target.owner_board.activate_summoners(target.owner_board.order[0])  
         target.perk_used =True
         
-    
 
 dict_of_items_ability = {"apple":[apple_ability,None],"Better Apple":[apple_1_ability,None],"Best Apple":[apple_2_ability,None],"honey":[honey_ability,"faint"]}
 class Item: # becareful there are many types of abiltiies from buffs to reducing damage once 
@@ -794,10 +799,8 @@ class Item_shop:
             self.amount_of_items = self.amount_of_items+1
         if self.turn in [3,7,9,11]:
             self.add_item_pool()
-
     def add_item_pool(self):
         self.item_pool=  np.concatenate((self.item_pool,dict_of_items[self.turn]))
-    
     def buy(self,index,target):
         print(self.item_list[index],"BUYGIN")
         if index < len(self.item_list):
@@ -810,27 +813,16 @@ class Item_shop:
             # activate the item
     def generate_items(self):
         self.item_list = np.random.choice(self.item_pool,size=self.amount_of_items,replace=False)
-        
-        
-        
-        
-       
         # print(self.item_list) 
         for item in self.item_list:                      
-            
             new_item = dict_of_items_with_stats[item]
-          
-            
             # self.shop_units = np.insert(self.player_units,index,new_unit)
-            
             self.temp_shop.append(new_item)
-           
             # self.shop_units= np.delete(self.shop_units,index)
             # np.delete(self.shop_units,index)
             # self.player_units = np.insert(self.player_units,index,new_unit)
         self.item_list = copy.deepcopy(self.temp_shop)
         self.temp_shop=[]#empty to avoid memory issues 
-
     def reroll(self):
         ## only called from it's parent shop (hopefully)
         if self.gold >0:
@@ -845,7 +837,6 @@ class Item_shop:
     def show_items(self):
         print("Showing items")
         print(self.item_list)
-  
     def edit_shop(self,shop):
         self.temp_shop = []
         self.shop_units =  shop
@@ -865,7 +856,18 @@ class Item_shop:
 # def honey_ability(honey,board):
 
 
+class Player:
+    def __init__(self):
+        self.round_counter =0
+        self.player_hp = 6
+    # def battle(self):
 
+class Match:
+    def __init__(self):
+        self.round_counter = 0
+    def increase_round(self):
+        self.round_counter = self.round_counter +1
+    def player_v_player(self):
 
 
 # def display_board(board1,board2):
