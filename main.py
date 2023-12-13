@@ -28,7 +28,8 @@ class match_env:
 #1)hurt (alive units get pirio)
 #2)faint (by which one dies first) (tie is broken by left to right on player side?)
 # ### TODO perma buffs aren't removed when adding units 
-    
+def swan_ability(swan,board):
+    board.shop.gold = board.shop.gold + swan.level
 def crab_ability(crab,board):
     highest_hp = -2
     for unit in board.order:
@@ -102,7 +103,8 @@ def pig_ability(pig,player_board):
 status = ["buy","sell","faint","none","start_of_battle","start_of_turn",]
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[pig_ability,"sell"],"mouse":[mouse_ability,"sell"],
-               "fish":[fish_ability,"level_up"],"cricket":[cricket_ability,"faint"],"horse":[horse_ability,"summon"],"zombiecircket":[skippper,None],"bee":[skippper,None], "turkey" :[turkey_ability,"summon"]} 
+               "fish":[fish_ability,"level_up"],"cricket":[cricket_ability,"faint"],"horse":[horse_ability,"summon"],"zombiecircket":[skippper,None],
+               "bee":[skippper,None], "turkey" :[turkey_ability,"summon"],"crab":[crab_ability,"start_of_battle"],"swan":[swan_ability,"start_of_turn"]} 
 
 class Unit:
     ## add cap to 50 hp and 50 damage
@@ -139,8 +141,7 @@ class Unit:
         # target.perk = self.name
         # target.perk_activation = dict_of_items_ability[self.name][1]
         # target.perk_ability = self.ability = dict_of_items_ability[self.name][0]
-        
-
+    
     def update(self,owner_board):
         # update only makes the ability in que be ware of this
         #another object has to force the ability to activate 
@@ -261,6 +262,7 @@ class Board:
         
         
     
+
     def amount_units(self):
         return len(self.order)
     def remove_fainted_list(self):
@@ -435,7 +437,15 @@ class Board:
             if unit != None:
                 if unit != exempt:
                     self.targetable_units.append(unit)
-    
+    def start_of_turn_for_units(self):
+        self.create_targetable_list()
+        for unit in self.targetable_units: 
+            unit.update_state("start_of_turn")
+            unit.update(self)
+    def end_of_turn_for_units(self):
+        for unit in self.position_unit_dict:
+            unit.update_state("end_of_turn")
+            unit.update(self)
     def create_board_for_battle(self):
         # process list   
         list_for_battle = self.position_unit_dict.values()
@@ -534,7 +544,7 @@ def battle_phase(board1,board2,round_num = 320,visible = False):
             elif board1.amount_units() == 0 and board2.amount_units()==0:
                     print("draw")
                     battle_finished = True
-                    
+                    return None
                     # return "draw"
             else:
                     if visible:
@@ -552,7 +562,7 @@ dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish",
                ,11:["leopard","boar","tiger","wolvrine","gorilla","dragon","mamotth","cat","snake","fly"]}
 
 dict_of_pets_with_stats ={"duck":Unit("duck",2,3),"beaver":Unit("beaver",3,2),"otter":Unit("otter",1,3),"pig":Unit("pig",4,1),"ant":Unit("ant",2,2),"mosqutio":Unit("mosqutio",2,2),
-                          "mouse":Unit("mouse",1,2),"fish":Unit("fish",2,3),"cricket":Unit("cricket",1,2),"horse":Unit("horse",2,1),"turkey":Unit("turkey",3,4)}
+                          "mouse":Unit("mouse",1,2),"fish":Unit("fish",2,3),"cricket":Unit("cricket",1,2),"horse":Unit("horse",2,1),"turkey":Unit("turkey",3,4),"swan":Unit("swan",2,1)}
 
 class Unit_store:
     def __init__(self):
@@ -857,19 +867,39 @@ class Item_shop:
 
 
 class Player:
-    def __init__(self):
+    def __init__(self,board,unit_store,item_shop):
         self.round_counter =0
         self.player_hp = 6
-    # def battle(self):
+    
 
 class Match:
     def __init__(self):
         self.round_counter = 0
     def increase_round(self):
         self.round_counter = self.round_counter +1
-    def player_v_player(self):
+    def player_v_player(self,p1,p2):
+        
 
+        p1.start_of_turn_for_units()
+        p2.start_of_turn_for_units()
 
+        p1.start_of_turn_for_units()
+        p2.start_of_turn_for_units()
+        battle_results = battle_phase(p1,p2)
+        if battle_results == True:
+            p2.player_hp = p2.player_hp -1 
+        elif battle_results == False:
+            p1.player_hp = p1.player_hp -1 
+
+    def full_match(self,p1,p2):
+        if p1.player_hp !=0 and p2.player_hp !=0:
+
+            
+            self.player_v_player(p1,p2)
+    def buy_window(self):
+        pass
+        ## Allow it to be a time frame for the AI to buy
+        
 # def display_board(board1,board2):
     # while add loops here for gods sake 
 
@@ -981,16 +1011,18 @@ class Match:
 
 # display_board(board,board)
 
-# board = Board()
-# shop= Unit_store()
-# board.shop_linking(shop)
-# shop.link_to_board(board)
-# shop.generate_units()
-# # shop.reroll()
-# shop.edit_shop([["pig",1,1],["pig",1,1],["mosqutio",1,1]])
-# shop.buy(0,4)
-# shop.buy(1,1)
-# shop.buy(0,3)   
+board = Board()
+shop= Unit_store()
+board.shop_linking(shop)
+shop.link_to_board(board)
+shop.generate_units()
+# shop.reroll()
+shop.edit_shop([["swan",1,1],["pig",1,1],["mosqutio",1,1]])
+shop.buy(0,4)
+shop.buy(1,1)
+shop.buy(0,3)   
+board.start_of_turn_for_units()
+board.shop.gold_check()
 # total_hp =battle_phase(board,board, "start",2) 
 # print(total_hp,"tot")
 
@@ -1182,6 +1214,21 @@ class CustomTests(unittest.TestCase):
 
         total_hp =battle_phase(board,board,1,6)   
         self.assertEqual(total_hp,[3,4],"failed honey test") 
+
+    def test_swan_ability(self):
+        board = Board()
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+        # shop.reroll()
+        shop.edit_shop([["swan",1,1],["pig",1,1],["mosqutio",1,1]])
+        shop.buy(0,4)
+        shop.buy(1,1)
+        shop.buy(0,3)   
+        board.start_of_turn_for_units()
+        
+        self.assertEqual(board.shop.gold,2,"failed swan test") 
     def test_turkey_abitlity(self):
         board = Board()
         shop= Unit_store()
