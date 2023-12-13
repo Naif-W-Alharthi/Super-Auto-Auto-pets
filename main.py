@@ -36,6 +36,8 @@ def crab_ability(crab,board):
         if unit != crab:
                 if unit.base_hp> highest_hp:
                     highest_hp = unit.base_hp * (0.5*crab.level)
+
+    crab.base_hp = highest_hp
 def snail_ability(snail,board):
         if board.last_round_lost:
             for target in board.position_unit_dict.values():
@@ -63,14 +65,14 @@ def mosquito_ability(mosqiuto,owner_board):
 def ant_ability(self,owner_board=None):
         buff_amount = self.level
         owner_board.order[owner_board.random_single_unit()].temp_buff(buff_amount,buff_amount)      
-def mouse_ability(self,owner_board):
+def mouse_ability(mouse,owner_board):
     
 
-    if self.level ==1:
+    if mouse.level ==1:
        owner_board.item_store.add_item(Item("apple",0))
      
        #"Better Apple":[apple_1_ability],"Best Apple"
-    elif self.level == 2:
+    elif mouse.level == 2:
          owner_board.item_store.add_item(Item("Better Apple",0))
     else:
         owner_board.item_store.add_item(Item("Best Apple",0))
@@ -90,6 +92,16 @@ def fish_ability(fish,player_board):
 
         unit.perma_buff(fish.level,fish.level)  
 
+def worm_ability(worm,owner_board):
+    
+
+    if worm.level ==1:
+       owner_board.item_store.add_item(Item("apple",2))
+    elif worm.level == 2:
+         owner_board.item_store.add_item(Item("Better Apple",2))
+    else:
+        owner_board.item_store.add_item(Item("Best Apple",2))
+
 def skippper(self= None,skipper = None):
     return False
 
@@ -104,7 +116,8 @@ status = ["buy","sell","faint","none","start_of_battle","start_of_turn",]
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[pig_ability,"sell"],"mouse":[mouse_ability,"sell"],
                "fish":[fish_ability,"level_up"],"cricket":[cricket_ability,"faint"],"horse":[horse_ability,"summon"],"zombiecircket":[skippper,None],
-               "bee":[skippper,None], "turkey" :[turkey_ability,"summon"],"crab":[crab_ability,"start_of_battle"],"swan":[swan_ability,"start_of_turn"]} 
+               "bee":[skippper,None], "turkey" :[turkey_ability,"summon"],"crab":[crab_ability,"start_of_battle"],"swan":[swan_ability,"start_of_turn"],
+               "snail":[snail_ability,"start_of_battle"],"worm":[worm_ability,"start_of_turn"]} 
 
 class Unit:
     ## add cap to 50 hp and 50 damage
@@ -136,12 +149,6 @@ class Unit:
         self.state = state
     def increase_level(self,level):
         self.level  = level## WIP
-    
-#         self.owner = target
-        # target.perk = self.name
-        # target.perk_activation = dict_of_items_ability[self.name][1]
-        # target.perk_ability = self.ability = dict_of_items_ability[self.name][0]
-    
     def update(self,owner_board):
         # update only makes the ability in que be ware of this
         #another object has to force the ability to activate 
@@ -159,8 +166,7 @@ class Unit:
          if ( self.state == self.perk_activation ) and not self.perk_used:
              
              self.perk_ability(self)
-             self.perk_used = True
-            
+             self.perk_used = True         
     def attack(self,enemy):
         enemy.base_hp = enemy.base_hp - self.Base_damage
         self.base_hp = self.base_hp - enemy.Base_damage
@@ -171,8 +177,7 @@ class Unit:
             enemy.base_hp = -1
         if self.base_hp <= 0:
             self.alive = False
-            self.base_hp = -1
-    
+            self.base_hp = -1 
     def alive_check(self):
         return self.alive
     def perma_buff(self,Damage,Hp):
@@ -562,7 +567,8 @@ dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish",
                ,11:["leopard","boar","tiger","wolvrine","gorilla","dragon","mamotth","cat","snake","fly"]}
 
 dict_of_pets_with_stats ={"duck":Unit("duck",2,3),"beaver":Unit("beaver",3,2),"otter":Unit("otter",1,3),"pig":Unit("pig",4,1),"ant":Unit("ant",2,2),"mosqutio":Unit("mosqutio",2,2),
-                          "mouse":Unit("mouse",1,2),"fish":Unit("fish",2,3),"cricket":Unit("cricket",1,2),"horse":Unit("horse",2,1),"turkey":Unit("turkey",3,4),"swan":Unit("swan",2,1)}
+                          "mouse":Unit("mouse",1,2),"fish":Unit("fish",2,3),"cricket":Unit("cricket",1,2),"horse":Unit("horse",2,1),"turkey":Unit("turkey",3,4),"swan":Unit("swan",2,1),
+                          "crab":Unit("crab",4,1),"worm":Unit("worm",1,2),"hedgehog":Unit("hedgehog",4,2)}
 
 class Unit_store:
     def __init__(self):
@@ -1017,14 +1023,14 @@ board.shop_linking(shop)
 shop.link_to_board(board)
 shop.generate_units()
 # shop.reroll()
-shop.edit_shop([["swan",1,1],["pig",1,1],["mosqutio",1,1]])
+shop.edit_shop([["pig",1,91],["pig",1,1],["hedgehog",1,1]])
 shop.buy(0,4)
 shop.buy(1,1)
 shop.buy(0,3)   
 board.start_of_turn_for_units()
-board.shop.gold_check()
-# total_hp =battle_phase(board,board, "start",2) 
-# print(total_hp,"tot")
+# board.shop.gold_check()
+total_hp =battle_phase(board,board, "start",1) 
+print(total_hp,"tot")
 
 
 
@@ -1214,7 +1220,6 @@ class CustomTests(unittest.TestCase):
 
         total_hp =battle_phase(board,board,1,6)   
         self.assertEqual(total_hp,[3,4],"failed honey test") 
-
     def test_swan_ability(self):
         board = Board()
         shop= Unit_store()
@@ -1246,6 +1251,22 @@ class CustomTests(unittest.TestCase):
                 # 
         total_hp =battle_phase(board,board, 1) 
         self.assertEqual(total_hp,[7,9],"failed honey test") 
+
+    def test_crab_ability(self):
+        board = Board()
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+        # shop.reroll()
+        shop.edit_shop([["swan",1,91],["crab",1,1],["pig",1,1]])
+        shop.buy(0,4)
+        shop.buy(1,1)
+        shop.buy(0,3)   
+        board.start_of_turn_for_units()
+        # board.shop.gold_check()
+        total_hp =battle_phase(board,board, "start",1) 
+        self.assertEqual(total_hp,[3, 137.5],"failed honey test") 
 # unittest.main() 
 
 
