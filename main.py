@@ -41,7 +41,8 @@ def crab_ability(crab,board):
 def snail_ability(snail,board):
         if board.last_round_lost:
             for target in board.position_unit_dict.values():
-             target.perma_buff(0,snail.level)
+             if target!= None and target != snail:
+                 target.perma_buff(0,snail.level)
 def turkey_ability(turkey,target):
      if turkey.base_hp >0:
     
@@ -91,7 +92,10 @@ def fish_ability(fish,player_board):
        for unit in player_board.random_n_amount_of_units(2,fish):
 
         unit.perma_buff(fish.level,fish.level)  
-
+def hedgehog_ability(hedgehog,board):
+    for unit in board.order+board.enemy_board.order:
+        unit.take_damage(2*hedgehog.level)
+        print("hdege hog damaged")
 def worm_ability(worm,owner_board):
     
 
@@ -101,23 +105,38 @@ def worm_ability(worm,owner_board):
          owner_board.item_store.add_item(Item("Better Apple",2))
     else:
         owner_board.item_store.add_item(Item("Best Apple",2))
-
+def giraffe_ability(giraffe,board):
+    pass # nearest key word will always happen to the nearest
 def skippper(self= None,skipper = None):
     return False
-
+def rat_ability(rat,board):
+    for rat in range(0,rat.level):
+        board.enemy_board.order.insert(0,Unit("dirty_rat",1,1))# add it at the start of line in combat 
+        board.enemy_board.activate_summoners(board.enemy_board.order[0])  
 def pig_ability(pig,player_board):
     player_board.gold = player_board.gold +pig.level
 
+def kangaroo_ability(kangaroo,owner_board):
+    kangaroo.temp_buff(kangaroo.level,kangaroo.level)
+    kangaroo.ability_used = False
+def peacock_ability(peacock,owner_board):
+    peacock.temp_buff(4*peacock.level,0)
+    peacock.ability_used = False
 
+def flamingo_ability(flamingo,owner_board):
+    buff_list=  owner_board[-2:owner_board.order.index(flamingo)]
+    buff_list= buff_list[-2:]
+    for unit in buff_list:
+        unit.temp_buff(flamingo.level,flamingo.level)
 
-    pass #WIP
 ## has a list of summoned units that are check by the horse and are buffed by the horse 
-status = ["buy","sell","faint","none","start_of_battle","start_of_turn",]
+status = ["buy","sell","faint","none","start_of_battle","start_of_turn","friend_ahead_attacks"]
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
                "duck":[duck_ability,"sell"],"beaver":[beaver_ability,"sell"],"pig":[pig_ability,"sell"],"mouse":[mouse_ability,"sell"],
                "fish":[fish_ability,"level_up"],"cricket":[cricket_ability,"faint"],"horse":[horse_ability,"summon"],"zombiecircket":[skippper,None],
                "bee":[skippper,None], "turkey" :[turkey_ability,"summon"],"crab":[crab_ability,"start_of_battle"],"swan":[swan_ability,"start_of_turn"],
-               "snail":[snail_ability,"start_of_battle"],"worm":[worm_ability,"start_of_turn"]} 
+               "snail":[snail_ability,"start_of_turn"],"worm":[worm_ability,"start_of_turn"],"hedgehog":[hedgehog_ability,"faint"],
+               "rat":[rat_ability,"faint"],"dirty_rat":[skippper,None],"kangaroo":[kangaroo_ability,"friend_ahead_attacks"],"peacock":[peacock_ability,"hurt"]} 
 
 class Unit:
     ## add cap to 50 hp and 50 damage
@@ -155,10 +174,12 @@ class Unit:
    
         self.owner_board = owner_board
         # print(self.state)
+        
         # print(self.ablity_game_state,self.state)
         if (self.state==self.ablity_game_state) and not self.ability_used:
-            self.ability(self,self.owner_board) ## We must send the board to avoid any issues later on 
             self.ability_used = True
+            self.ability(self,self.owner_board) ## We must send the board to avoid any issues later on 
+            
         
         if self.perk !=None:
          
@@ -169,7 +190,18 @@ class Unit:
              self.perk_used = True         
     def attack(self,enemy):
         enemy.base_hp = enemy.base_hp - self.Base_damage
+        
+        
         self.base_hp = self.base_hp - enemy.Base_damage
+        ## remeber the two units attack at the same moment so don't apply the damage before 
+        # if self.perk On_damage:
+        # reduce damage
+        # if self.perk On_damage:
+        # reduce damage
+        enemy.update_state("hurt")
+        enemy.update(self.owner_board)
+        self.update_state("hurt")
+        self.update(self.owner_board)
         print(self.Name, " attacked ",enemy.Name )
         print(enemy.Name, " attacked ",self.Name )
         if enemy.base_hp <= 0:
@@ -178,6 +210,7 @@ class Unit:
         if self.base_hp <= 0:
             self.alive = False
             self.base_hp = -1 
+        
     def alive_check(self):
         return self.alive
     def perma_buff(self,Damage,Hp):
@@ -203,6 +236,11 @@ class Unit:
 
     def take_damage(self,damage_amount):
         self.base_hp= self.base_hp -damage_amount
+        # if self.perk On_damage:
+        # reduce damage
+        if damage_amount < 0:
+            self.update_state("hurt")
+            self.update(self.owner_board)
         if self.base_hp <= 0:
             self.alive = False
 
@@ -287,6 +325,7 @@ class Board:
         for unit in fainted__list:
                 unit.update_state("faint")
                 unit.update(self)
+                print(unit.Name,"NAMER")
 
 
         # for unit in self.temp_list_for_summs:
@@ -512,6 +551,17 @@ def battle_phase(board1,board2,round_num = 320,visible = False):
                 board1.mid_battle_state(board2)
             board2.order[0].attack(board1.order[0])
             
+            if board2.order[0] != board2.order[-1]:
+            
+                board2.order[1].update_state("friend_ahead_attacks")
+               
+                board2.order[1].update(board2)
+
+            if board1.order[0] != board1.order[-1]:
+                
+                 board1.order[1].update_state("friend_ahead_attacks")
+                 board1.order[1].update(board1)
+            
             board1.remove_fainted_list()
             board2.remove_fainted_list()
 
@@ -568,7 +618,7 @@ dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish",
 
 dict_of_pets_with_stats ={"duck":Unit("duck",2,3),"beaver":Unit("beaver",3,2),"otter":Unit("otter",1,3),"pig":Unit("pig",4,1),"ant":Unit("ant",2,2),"mosqutio":Unit("mosqutio",2,2),
                           "mouse":Unit("mouse",1,2),"fish":Unit("fish",2,3),"cricket":Unit("cricket",1,2),"horse":Unit("horse",2,1),"turkey":Unit("turkey",3,4),"swan":Unit("swan",2,1),
-                          "crab":Unit("crab",4,1),"worm":Unit("worm",1,2),"hedgehog":Unit("hedgehog",4,2)}
+                          "crab":Unit("crab",4,1),"worm":Unit("worm",1,2),"hedgehog":Unit("hedgehog",4,2),"rat":Unit("rat",3,6),"peacock":Unit("peacock",2,5)}
 
 class Unit_store:
     def __init__(self):
@@ -876,7 +926,9 @@ class Player:
     def __init__(self,board,unit_store,item_shop):
         self.round_counter =0
         self.player_hp = 6
-    
+        self.board = board
+        self.unit_store = unit_store
+        self.item_shop = item_shop
 
 class Match:
     def __init__(self):
@@ -889,13 +941,17 @@ class Match:
         p1.start_of_turn_for_units()
         p2.start_of_turn_for_units()
 
-        p1.start_of_turn_for_units()
-        p2.start_of_turn_for_units()
+        p1.end_of_turn_for_units()
+        p2.end_of_turn_for_units()
         battle_results = battle_phase(p1,p2)
         if battle_results == True:
             p2.player_hp = p2.player_hp -1 
+            p2.last_round_lost = True
+            p1.last_round_lost = False
         elif battle_results == False:
             p1.player_hp = p1.player_hp -1 
+            p1.last_round_lost = True
+            p2.last_round_lost = False
 
     def full_match(self,p1,p2):
         if p1.player_hp !=0 and p2.player_hp !=0:
@@ -1006,6 +1062,16 @@ class Match:
 
 
 # honey
+# board = Board()
+# shop= Unit_store()
+# board.shop_linking(shop)
+# shop.link_to_board(board)
+            
+# shop.edit_shop([["cricket",1,1],["beaver",1,1],["beaver",1,1]])
+        
+# shop.buy(0,4)
+
+# total_hp =battle_phase(board,board, 1)
 
 
 # shop.selling(1)
@@ -1018,18 +1084,21 @@ class Match:
 # display_board(board,board)
 
 board = Board()
+
 shop= Unit_store()
 board.shop_linking(shop)
 shop.link_to_board(board)
 shop.generate_units()
+board.last_round_lost = True
 # shop.reroll()
-shop.edit_shop([["pig",1,91],["pig",1,1],["hedgehog",1,1]])
+shop.edit_shop([["pig",1,1],["pig",1,1],["flamingo",1,1]])
 shop.buy(0,4)
 shop.buy(1,1)
 shop.buy(0,3)   
 board.start_of_turn_for_units()
-# board.shop.gold_check()
-total_hp =battle_phase(board,board, "start",1) 
+# board.shop.gold_check()#
+board_2 = copy.deepcopy(board)
+total_hp =battle_phase(board,board_2, 1,"visable") 
 print(total_hp,"tot")
 
 
@@ -1251,7 +1320,22 @@ class CustomTests(unittest.TestCase):
                 # 
         total_hp =battle_phase(board,board, 1) 
         self.assertEqual(total_hp,[7,9],"failed honey test") 
-
+    def test_hedgehog_ability(self):
+                
+        board = Board()
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+        # shop.reroll()
+        shop.edit_shop([["pig",1,91],["pig",1,1],["hedgehog",1,1]])
+        shop.buy(0,4)
+        shop.buy(1,1)
+        shop.buy(0,3)   
+        board.start_of_turn_for_units()
+  
+        total_hp =battle_phase(board,board, 1,"visable") 
+        self.assertEqual(total_hp, [1, 87],"failed hedgehog test") 
     def test_crab_ability(self):
         board = Board()
         shop= Unit_store()
@@ -1266,7 +1350,78 @@ class CustomTests(unittest.TestCase):
         board.start_of_turn_for_units()
         # board.shop.gold_check()
         total_hp =battle_phase(board,board, "start",1) 
-        self.assertEqual(total_hp,[3, 137.5],"failed honey test") 
+        self.assertEqual(total_hp,[3, 137.5],"failed crab test") 
+    def test_snail_ability(self):
+        board = Board()
+
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+        board.last_round_lost = True
+        # shop.reroll()
+        shop.edit_shop([["snail",1,1],["pig",1,1],["hedgehog",1,1]])
+        shop.buy(0,4)
+        shop.buy(1,1)
+        shop.buy(0,3)   
+        board.start_of_turn_for_units()
+        # board.shop.gold_check()
+        total_hp =battle_phase(board,board, "start","visable") 
+        self.assertEqual(total_hp,[3, 5],"failed crab test") 
+    def test_rat_ability(self):
+        board = Board()
+
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+        board.last_round_lost = True
+        # shop.reroll()
+        shop.edit_shop([["pig",1,1],["pig",1,1],["rat",1,1]])
+        shop.buy(0,4)
+        shop.buy(1,1)
+        shop.buy(0,3)   
+        board.start_of_turn_for_units()
+        # board.shop.gold_check()
+        total_hp =battle_phase(board,board, 1,"visable") 
+        self.assertEqual(total_hp,[3, 3],"failed crab test") 
+    def test_kangaroo_ability(self):
+        board = Board()
+
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+        board.last_round_lost = True
+        # shop.reroll()
+        shop.edit_shop([["pig",1,1],["kangaroo",1,1],["rat",1,1]])
+        shop.buy(0,4)
+        shop.buy(1,1)
+        shop.buy(0,3)   
+        board.start_of_turn_for_units()
+        # board.shop.gold_check()#
+        board_2 = copy.deepcopy(board)
+        total_hp =battle_phase(board,board_2, 2,"visable") 
+        # print(total_hp,"tot")
+        self.assertEqual(total_hp,[4, 4],"failed kangaroo test") 
+    def test_peacock_ability(self):
+        board = Board()
+
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+        board.last_round_lost = True
+        # shop.reroll()
+        shop.edit_shop([["pig",1,1],["pig",1,1],["peacock",1,9]])
+        shop.buy(0,4)
+        shop.buy(1,1)
+        shop.buy(0,3)   
+        board.start_of_turn_for_units()
+        # board.shop.gold_check()#
+        board_2 = copy.deepcopy(board)
+        total_hp =battle_phase(board,board_2, 2,"visable") 
+        self.assertEqual(total_hp,[11,5],"failed crab test") 
 # unittest.main() 
 
 
