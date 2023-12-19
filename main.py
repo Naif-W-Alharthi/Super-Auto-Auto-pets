@@ -6,8 +6,9 @@ import unittest
 
 ### TODO:
 #we activate summoning using a function for now consider finding an efficent way to do this ?
-
-
+#add pill
+# add spider
+#inserting should respect the max allowed units
 from numpy.random import seed
 from numpy.random import randint
 import numpy as np
@@ -87,8 +88,8 @@ def beaver_ability(beaver,owner_board,prior_list=None):
    for unit in owner_board.board.random_n_amount_of_units(2,beaver):
         
         unit.perma_buff(beaver.level,0) 
-def cricket_ability(cricket,player_board,prior_list):
-    player_board.order.insert(0,Unit("zombiecircket",cricket.level,cricket.level))# add it at the start of line in combat 
+def cricket_ability(cricket,owner_board,prior_list):
+    owner_board.order.insert(0,Unit("zombiecircket",cricket.level,cricket.level))# add it at the start of line in combat 
     cricket.owner_board.activate_summoners(cricket.owner_board.order[0])  
 def fish_ability(fish,player_board,prior_list=None): 
       
@@ -148,6 +149,10 @@ def flamingo_ability(flamingo,owner_board,prior_list):
         print("unit is",unit.Name)
         unit.temp_buff(flamingo.level,flamingo.level)
         print(unit.base_hp)
+def sheep_ability(sheep,owner_board,prior_list):
+    for ram in [2,2]:
+        owner_board.order.insert(0,Unit("ram",sheep.level*2,sheep.level*2))# add it at the start of line in combat 
+        sheep.owner_board.activate_summoners(sheep.owner_board.order[0])  
 ## has a list of summoned units that are check by the horse and are buffed by the horse 
 status = ["buy","sell","faint","none","start_of_battle","start_of_turn","friend_ahead_attacks"]
 ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqutio":[mosquito_ability,"start_of_battle"],
@@ -155,7 +160,7 @@ ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqut
                "fish":[fish_ability,"level_up"],"cricket":[cricket_ability,"faint"],"horse":[horse_ability,"summon"],"zombiecircket":[skippper,None],
                "bee":[skippper,None], "turkey" :[turkey_ability,"summon"],"crab":[crab_ability,"start_of_battle"],"swan":[swan_ability,"start_of_turn"],
                "snail":[snail_ability,"start_of_turn"],"worm":[worm_ability,"start_of_turn"],"hedgehog":[hedgehog_ability,"faint"],
-               "rat":[rat_ability,"faint"],"dirty_rat":[skippper,None],"kangaroo":[kangaroo_ability,"friend_ahead_attacks"],"peacock":[peacock_ability,"hurt"],"flamingo":[flamingo_ability,"faint"]} 
+               "rat":[rat_ability,"faint"],"dirty_rat":[skippper,None],"kangaroo":[kangaroo_ability,"friend_ahead_attacks"],"peacock":[peacock_ability,"hurt"],"flamingo":[flamingo_ability,"faint"],"ram":[skippper,None],"sheep":[sheep_ability,"faint"]} 
 
 modifier_dict= {"meat":[0,3],None:[0,0]}
 class Unit: 
@@ -653,12 +658,12 @@ def battle_phase(board1,board2,round_num = 320,visible = False):
 
     
 dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish","cricket","horse"],3:["snail","crab","swan","rat","hedgehog","peacock","flmingo","worm","kangaroo","spider"],5:["dodo","badger","dolphin","giraffe","elephint","camel","rabbit","bull","dog","sheep"]
-               ,7:["skunk","hipoo","pufferfish","turtle","squrial","penguin","deer","whale","parrot"],9:["scropion","crocidle","rhino","monkey","armadilo","cow","seal","chciken","shark","turkey"]
+               ,7:["skunk","hipoo","pufferfish","turtle","squrial","penguin","deer","whale","parrot"],9:["scropion","crocidle","rhino","monkey","armadilo","cow","seal","chicken","shark","turkey"]
                ,11:["leopard","boar","tiger","wolvrine","gorilla","dragon","mamotth","cat","snake","fly"]}
 
 dict_of_pets_with_stats ={"duck":Unit("duck",2,3),"beaver":Unit("beaver",3,2),"otter":Unit("otter",1,3),"pig":Unit("pig",4,1),"ant":Unit("ant",2,2),"mosqutio":Unit("mosqutio",2,2),
                           "mouse":Unit("mouse",1,2),"fish":Unit("fish",2,3),"cricket":Unit("cricket",1,2),"horse":Unit("horse",2,1),"turkey":Unit("turkey",3,4),"swan":Unit("swan",2,1),
-                          "crab":Unit("crab",4,1),"worm":Unit("worm",1,2),"hedgehog":Unit("hedgehog",4,2),"rat":Unit("rat",3,6),"peacock":Unit("peacock",2,5)}
+                          "crab":Unit("crab",4,1),"worm":Unit("worm",1,2),"hedgehog":Unit("hedgehog",4,2),"rat":Unit("rat",3,6),"peacock":Unit("peacock",2,5),"sheep":Unit("sheep",2,2)}
 
 class Unit_store:
     def __init__(self):
@@ -1159,12 +1164,10 @@ item_shop= Item_shop(shop)
 shop.generate_units()
 board.last_round_lost = True
 shop.gold_override(99999999)
-shop.edit_shop([["pig",1,1],["pig",1,1],["pig",1,9]])
+shop.edit_shop([["pig",1,1],["pig",1,1],["sheep",1,1]])
 shop.buy(0,4)
 shop.buy(1,1)
 shop.buy(0,3)   
-item_shop.edit_shop(["meat"])
-item_shop.buy(0,1)
 
 
 
