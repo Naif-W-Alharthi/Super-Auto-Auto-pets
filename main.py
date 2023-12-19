@@ -157,7 +157,8 @@ ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqut
                "snail":[snail_ability,"start_of_turn"],"worm":[worm_ability,"start_of_turn"],"hedgehog":[hedgehog_ability,"faint"],
                "rat":[rat_ability,"faint"],"dirty_rat":[skippper,None],"kangaroo":[kangaroo_ability,"friend_ahead_attacks"],"peacock":[peacock_ability,"hurt"],"flamingo":[flamingo_ability,"faint"]} 
 
-class Unit:
+modifier_dict= {"meat":[0,3],None:[0,0]}
+class Unit: 
     ## add cap to 50 hp and 50 damage
     def __init__(self,Name,Damage,Hp):
         self.Name = Name
@@ -209,10 +210,29 @@ class Unit:
              self.perk_ability(self,optional_board)
              self.perk_used = True         
     def attack(self,enemy):
-        enemy.base_hp = enemy.base_hp - self.Base_damage
-        
-        
-        self.base_hp = self.base_hp - enemy.Base_damage
+        enemy_modifier=[0,0]
+        modifier =[0,0]
+        temp_modifier= [0,0]
+        print(self.perk,"perk")
+        print(enemy.perk,"perk")
+
+        for unit in [self,enemy]:
+                temp_modifier= [0,0]
+                perk_list = modifier_dict[unit.perk]
+                    
+                temp_modifier = [temp_modifier[0]+perk_list[0],temp_modifier[1]+perk_list[1]]
+
+
+                if unit == self:
+                    modifier=copy.deepcopy(temp_modifier)
+
+                else:
+                    enemy_modifier=copy.deepcopy(temp_modifier)
+   
+        enemy.base_hp = (enemy.base_hp+enemy_modifier[0]) - (self.Base_damage+modifier[1])
+            
+            
+        self.base_hp = (self.base_hp+modifier[0]) - (enemy.Base_damage+enemy_modifier[1])
         ## remeber the two units attack at the same moment so don't apply the damage before 
         # if self.perk On_damage:
         # reduce damage
@@ -224,7 +244,9 @@ class Unit:
         self.update(self.owner_board)
         print(self.Name, " attacked ",enemy.Name )
         print(enemy.Name, " attacked ",self.Name )
-        if enemy.base_hp <= 0:
+        
+        
+        if enemy.base_hp  <= 0:
             enemy.alive = False
             enemy.base_hp = -1
         if self.base_hp <= 0:
@@ -323,9 +345,6 @@ class Board:
                print(position,units.Name, units.base_hp, units.Base_damage)
         # print(self.order,"show order")
         
-        
-    
-
     def amount_units(self):
         return len(self.order)
     def remove_fainted_list(self):
@@ -334,7 +353,7 @@ class Board:
         fainted__list=[]
         
         for unit in order_copy:
-            print(unit.Name,"Name check from remove_fainted")
+        
             if unit.alive:
                 temp_list.append(unit)
                 
@@ -835,23 +854,31 @@ def honey_ability(target,optional_board):
         optional_board.insert(0,Unit("bee",1,1))# add it at the start of line in combat 
         target.owner_board.activate_summoners(target.owner_board.order[0])  
         target.perk_used =True
-        
+def cupcake_ability(target):
+    target.temp_buff(3,3)
 
-dict_of_items_ability = {"apple":[apple_ability,None],"Better Apple":[apple_1_ability,None],"Best Apple":[apple_2_ability,None],"honey":[honey_ability,"faint"]}
+dict_of_items_ability = {"apple":[apple_ability,"abilty","buff"],"Better Apple":[apple_1_ability,"abilty","buff"],
+                         "Best Apple":[apple_2_ability,"abilty","buff"],"honey":[honey_ability,"perk","buff"],
+                         "meat":[None,"perk","buff"],"cupcake":[cupcake_ability,"abilty","buff"]}
 class Item: # becareful there are many types of abiltiies from buffs to reducing damage once 
     ## link to the player unit board
     def __init__(self,name,cost = 3):
         self.name = name
         self.ability = dict_of_items_ability[name][0]
-
+        print(dict_of_items_ability[self.name][1],"self name 1",self.name)
         self.cost = cost
     def change_cost(self,new_cost):
         self.cost = new_cost
 
     def use_ability(self,target):
-        if dict_of_items_ability[self.name][1]  == None:
+        # print(dict_of_items_ability[self.name][1],"self name 133")
+           
+        if dict_of_items_ability[self.name][1]  == "abilty":
+            
             self.ability(target)
         else:
+
+            
             self.give_perk(target)
 
    
@@ -861,12 +888,12 @@ class Item: # becareful there are many types of abiltiies from buffs to reducing
         target.perk = self.name # removing to save some space form the str
         target.perk_activation = dict_of_items_ability[self.name][1]
         target.perk_ability = self.ability = dict_of_items_ability[self.name][0]
-        
+        target.perk_type = dict_of_items_ability[self.name][1]
         print("given_perk")
     
 
 
-dict_of_items_with_stats = {"apple": Item("apple"), "Better Apple":Item("Better Apple"),"Best Apple":("Better Apple"),"honey":Item("honey") }
+dict_of_items_with_stats = {"apple": Item("apple"), "Better Apple":Item("Better Apple"),"Best Apple":("Better Apple"),"honey":Item("honey"),"meat":Item("meat") ,"cupcake":Item("cupcake")}
 
 dict_of_items={1:["apple","honey"],3:["pill","meat","cupcake"],5:["salad","onion"],7:["canned food","pear"],9:["pepper","choco","sushi"],11:["steak","melon","mushroom","pizza"]}
 class Item_shop:
@@ -890,18 +917,24 @@ class Item_shop:
     def add_item_pool(self):
         self.item_pool=  np.concatenate((self.item_pool,dict_of_items[self.turn]))
     def buy(self,index,target):
-        print(self.item_list[index],"BUYGIN")
+   
         if index < len(self.item_list):
-      
+            
             if self.item_list[index] != None :
-       
+            
               if self.item_list[index].cost <=  self.linked_shop.gold:
+                  
                   self.item_list[index].use_ability(self.linked_shop.board.position_unit_dict[target])
-
+              else:
+                  print("Not enough gold")
+            else:
+                print("no unit in place")
+        else:
+            print("out of range")
+            
             # activate the item
     def generate_items(self):
         self.item_list = np.random.choice(self.item_pool,size=self.amount_of_items,replace=False)
-        # print(self.item_list) 
         for item in self.item_list:                      
             new_item = dict_of_items_with_stats[item]
             # self.shop_units = np.insert(self.player_units,index,new_unit)
@@ -1122,14 +1155,19 @@ board = Board()
 shop= Unit_store()
 board.shop_linking(shop)
 shop.link_to_board(board)
+item_shop= Item_shop(shop)
 shop.generate_units()
 board.last_round_lost = True
-        # shop.reroll()
-shop.edit_shop([["pig",1,1],["pig",1,1],["flamingo",1,1]])
+shop.gold_override(99999999)
+shop.edit_shop([["pig",1,1],["pig",1,1],["pig",1,9]])
 shop.buy(0,4)
 shop.buy(1,1)
 shop.buy(0,3)   
-board.start_of_turn_for_units()
+item_shop.edit_shop(["meat"])
+item_shop.buy(0,1)
+
+
+
         # board.shop.gold_check()#
 board_2 = copy.deepcopy(board)
 total_hp =battle_phase(board,board_2, 1,"visable") 
