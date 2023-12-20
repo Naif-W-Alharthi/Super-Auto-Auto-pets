@@ -126,8 +126,6 @@ def peacock_ability(peacock,owner_board,prior_list=None):
     peacock.temp_buff(4*peacock.level,0)
     peacock.ability_used = False
 def flamingo_ability(flamingo,owner_board,prior_list = None):
-
-   
     sliding_window = []
     for unit in prior_list:
       if unit == flamingo:
@@ -143,17 +141,30 @@ def flamingo_ability(flamingo,owner_board,prior_list = None):
         unit.temp_buff(flamingo.level,flamingo.level)
         print(unit.base_hp)
 def sheep_ability(sheep,owner_board,prior_list = None):
-    for ram in [2,2]:
+    for _ in range(2):
         owner_board.order.insert(0,Unit("ram",sheep.level*2,sheep.level*2))# add it at the start of line in combat 
         sheep.owner_board.activate_summoners(sheep.owner_board.order[0])  
 def dodo_ability(dodo,owner_board,prior_list = None):
-    dodo_index = -99
+    
     for index,unit in enumerate(owner_board.order):
         if unit == dodo:
             dodo_index = index
         if index == dodo_index+1:
-            owner_board.order[owner_board.random_single_unit()].temp_buff(0,dodo.Base_damage*(0.5*dodo.level)) 
-
+            owner_board.order[index].temp_buff(0,dodo.Base_damage*(0.5*dodo.level)) 
+def camel_ability(camel,owner_board,prior_list=None):
+    last_index = None
+    # print(id(owner_board),"OWNER BOARD BY FUNCTRION")
+    # print(id(camel.owner_board),"OWNER BORAD BY UNIT")
+    for index,unit in enumerate(camel.owner_board.order):
+  
+        if unit == camel:
+         owner_board.order[last_index].temp_buff(2*camel.level,2*camel.level) 
+             
+            #  print("buffed ",owner_board.order[last_index].Name)
+        last_index= index
+    print("onde")
+       
+    camel.ability_used = False
 def giraffe_ability(giraffe,owner_board,prior_list):
     # give the nearest friend ahead (amount of the units depend on level so)
     ### NOT BUFFING CHECK MEMORY ADDRESS
@@ -163,7 +174,7 @@ def giraffe_ability(giraffe,owner_board,prior_list):
         unit = owner_board.position_unit_dict[index]
         if unit == giraffe:
             giraffe_pos=index
-        if unit != None and giraffe_pos != None and index != giraffe:
+        if unit != None and giraffe_pos != None and unit != giraffe:
             print(index,"INDEX ADDE")
             buff_list.append(index)
         
@@ -172,25 +183,27 @@ def giraffe_ability(giraffe,owner_board,prior_list):
             print(index,"buffing this unit")
   
 
-            unit.perma_buff(1,1)
+            owner_board.position_unit_dict[index].perma_buff(1,1)
 def dolphin_ability(dolphin,owner_board,prior_list = None):
+    ## add level
     lowest_hp = 57
     lists_indexs =[]
     final_index = None
-    for index,unit in  enumerate(owner_board.enemy_board.order):
-        if unit.base_hp <= lowest_hp:
-            if lowest_hp == unit.base_hp:
-                lists_indexs.append(index)
-            else:
-                lowest_hp = unit.base_hp
-                lists_indexs = []
-                final_index = index
-    
-    if lists_indexs != []:
+    for _ in range(dolphin.level):
+        for index,unit in  enumerate(owner_board.enemy_board.order):
+            if unit.base_hp <= lowest_hp:
+                if lowest_hp == unit.base_hp:
+                    lists_indexs.append(index)
+                else:
+                    lowest_hp = unit.base_hp
+                    lists_indexs = []
+                    final_index = index
         
-        final_index = np.random.choice(lists_indexs,1)[0]
+        if lists_indexs != []:
+            
+            final_index = np.random.choice(lists_indexs,1)[0]
 
-    owner_board.enemy_board.order[final_index].take_damage(3)
+        owner_board.enemy_board.order[final_index].take_damage(3)
     # owner_board.order[dodo.place+1]
 ## has a list of summoned units that are check by the horse and are buffed by the horse 
 status = ["buy","sell","faint","none","start_of_battle","start_of_turn","friend_ahead_attacks"]
@@ -201,7 +214,8 @@ ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqut
                "snail":[snail_ability,"start_of_turn"],"worm":[worm_ability,"start_of_turn"],"hedgehog":[hedgehog_ability,"faint"],
                "rat":[rat_ability,"faint"],"dirty_rat":[skippper,None],"kangaroo":[kangaroo_ability,"friend_ahead_attacks"],
                "peacock":[peacock_ability,"hurt"],"flamingo":[flamingo_ability,"faint"],"ram":[skippper,None],"sheep":[sheep_ability,"faint"],
-               "dodo":[dodo_ability,"start_of_battle"],"dolphin":[dolphin_ability,"start_of_battle"],"giraffe":[giraffe_ability,"end_of_turn"]} 
+               "dodo":[dodo_ability,"start_of_battle"],"dolphin":[dolphin_ability,"start_of_battle"],"giraffe":[giraffe_ability,"end_of_turn"],
+               "camel":[camel_ability,"hurt"]} 
 
 modifier_dict= {"meat":[0,3],None:[0,0]}
 class Unit: 
@@ -259,8 +273,7 @@ class Unit:
         enemy_modifier=[0,0]
         modifier =[0,0]
         temp_modifier= [0,0]
-        print(self.perk,"perk")
-        print(enemy.perk,"perk")
+    
 
         for unit in [self,enemy]:
                 temp_modifier= [0,0]
@@ -285,7 +298,7 @@ class Unit:
         # if self.perk On_damage:
         # reduce damage
         enemy.update_state("hurt")
-        enemy.update(self.owner_board)
+        enemy.update(enemy.owner_board)
         self.update_state("hurt")
         self.update(self.owner_board)
         print(self.Name, " attacked ",enemy.Name )
@@ -449,7 +462,7 @@ class Board:
         curr_low_middle = ""
         curr_lower=""
        
-        for position,units in enumerate(self.order[::-1]):
+        for position,units in enumerate(self.order):
             # self.order.append(units)
             # print(f""" -----{position}---\n|    {units.Name}    |\n|damage:{units.Base_damage}||hp:{unitsround_hp}|""")
             curr_upper=curr_upper+base_upper
@@ -465,7 +478,7 @@ class Board:
         curr_middle=curr_middle+"  \ \ / /\ \    "
         curr_low_middle=curr_low_middle+"   \ V / _\ \   "
         curr_lower=curr_lower + "    \_/  \__/   "
-        for position,units in enumerate(other_board.order):
+        for position,units in enumerate(other_board.order[::-1]):
             
             curr_upper=curr_upper+base_upper
             curr_upo_middle =curr_upo_middle+base_upo_middle.replace("P",str(position))
@@ -628,18 +641,18 @@ def battle_phase(board1,board2,round_num = 320,visible = False):
 
             else:
                 board1.mid_battle_state(board2)
-            board2.order[0].attack(board1.order[0])
+            board2.order[-1].attack(board1.order[-1])
             
             if board2.order[0] != board2.order[-1]:
             
-                board2.order[1].update_state("friend_ahead_attacks")
+                board2.order[-2].update_state("friend_ahead_attacks")
                
-                board2.order[1].update(board2)
+                board2.order[-2].update(board2)
 
             if board1.order[0] != board1.order[-1]:
                 
-                 board1.order[1].update_state("friend_ahead_attacks")
-                 board1.order[1].update(board1)
+                 board1.order[-2].update_state("friend_ahead_attacks")
+                 board1.order[-2].update(board1)
             
             board1.remove_fainted_list()
             board2.remove_fainted_list()
@@ -697,7 +710,8 @@ dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish",
 
 dict_of_pets_with_stats ={"duck":Unit("duck",2,3),"beaver":Unit("beaver",3,2),"otter":Unit("otter",1,3),"pig":Unit("pig",4,1),"ant":Unit("ant",2,2),"mosqutio":Unit("mosqutio",2,2),
                           "mouse":Unit("mouse",1,2),"fish":Unit("fish",2,3),"cricket":Unit("cricket",1,2),"horse":Unit("horse",2,1),"turkey":Unit("turkey",3,4),"swan":Unit("swan",2,1),
-                          "crab":Unit("crab",4,1),"worm":Unit("worm",1,2),"hedgehog":Unit("hedgehog",4,2),"rat":Unit("rat",3,6),"peacock":Unit("peacock",2,5),"sheep":Unit("sheep",2,2),"dodo":Unit("dodo",4,2),"dolphin":Unit("dolphin",4,3)}
+                          "crab":Unit("crab",4,1),"worm":Unit("worm",1,2),"hedgehog":Unit("hedgehog",4,2),"rat":Unit("rat",3,6),"peacock":Unit("peacock",2,5),"sheep":Unit("sheep",2,2),
+                          "dodo":Unit("dodo",4,2),"dolphin":Unit("dolphin",4,3),"camel":Unit("camel",2,4)}
 
 class Unit_store:
     def __init__(self):
@@ -1197,7 +1211,7 @@ shop.link_to_board(board)
 shop.generate_units()
 board.last_round_lost = True
         # shop.reroll()
-shop.edit_shop([["pig",1,1],["pig",1,1],["giraffe",1,1]])
+shop.edit_shop([["camel",1,9],["pig",1,1],["pig",1,1]])
 shop.buy(0,4)   
 shop.buy(1,1)
 shop.buy(0,3)   
@@ -1205,7 +1219,7 @@ board.start_of_turn_for_units()
 board.end_of_turn_for_units()
         # board.shop.gold_check()#
 board_2 = copy.deepcopy(board)
-total_hp =battle_phase(board,board_2, 1,"visable")
+total_hp =battle_phase(board,board_2, 10,"visable")
 print(total_hp)
    
 
@@ -1597,6 +1611,25 @@ class CustomTests(unittest.TestCase):
         board_2 = copy.deepcopy(board)
         total_hp =battle_phase(board,board_2, 1,"visable")
         self.assertEqual(total_hp,[3,11],"failed dolphin test")
+    def test_giraffe_ability(self):
+        board = Board()
+
+        shop= Unit_store()
+        board.shop_linking(shop)
+        shop.link_to_board(board)
+        shop.generate_units()
+        board.last_round_lost = True
+                # shop.reroll()
+        shop.edit_shop([["pig",1,1],["pig",1,1],["giraffe",1,1]])
+        shop.buy(0,4)   
+        shop.buy(1,1)
+        shop.buy(0,3)   
+        board.start_of_turn_for_units()
+        board.end_of_turn_for_units()
+                # board.shop.gold_check()#
+        board_2 = copy.deepcopy(board)
+        total_hp =battle_phase(board,board_2, 1,"visable")
+        self.assertEqual(total_hp,[3,3],"failed giraffe test")
 # unittest.main() 
 
 

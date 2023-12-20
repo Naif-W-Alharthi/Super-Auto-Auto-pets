@@ -1,15 +1,18 @@
 test_list = [1, 4, 2, 9, 8]
  
-# printing original list
-print("The original list is : " + str(test_list))
+# print(test_list[-1])
+for _ in range(3):
+    print("hi mom and dad")
+# # printing original list
+# print("The original list is : " + str(test_list))
  
-# declaring elements till which elements required
-N = 4
+# # declaring elements till which elements required
+# N = 4
  
-# Get elements till particular element in list
-# using index() + list slicing
-temp = test_list.index(N)
-res = test_list[temp:]
-# rest = res[2:]
-# printing result
-print("Elements till N in list are : " + str(res))
+# # Get elements till particular element in list
+# # using index() + list slicing
+# temp = test_list.index(N)
+# res = test_list[temp:]
+# # rest = res[2:]
+# # printing result
+# print("Elements till N in list are : " + str(res))
