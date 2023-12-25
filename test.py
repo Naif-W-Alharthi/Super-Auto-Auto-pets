@@ -2,7 +2,7 @@ test_list = [1, 4, 2, 9, 8]
  
 # print(test_list[-1])
 last_unit = None
-target = 4
+target = 8
 target_unit = None
     # print(id(owner_board),"OWNER BOARD BY FUNCTRION")
     # print(id(camel.owner_board),"OWNER BORAD BY UNIT")
@@ -10,10 +10,10 @@ for index,unit in enumerate(test_list):
         
 
         if unit == target:
-            if index-1 >= 0:
+            if index+1 > len(test_list):
                   test_list[index + 1] = test_list[index + 1] +222
-            if index +1<= len(test_list):
-                  test_list[index - 1] = test_list[index + 1] +222
+            # if index +1<= len(test_list):
+            #       test_list[index - 1] = test_list[index + 1] +222
         # if target_unit != None and last_unit != None :
         #     test_list[last_unit]= test_list[last_unit] +92
         #     test_list[index] = test_list[index] +123
