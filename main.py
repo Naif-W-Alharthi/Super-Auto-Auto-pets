@@ -145,8 +145,7 @@ def flamingo_ability(flamingo,owner_board,prior_list = None):
             
     for unit in sliding_window:
         
-        unit.temp_buff(flamingo.ability_level,flamingo.ability_level)
-      
+        unit.temp_buff(flamingo.ability_level,flamingo.ability_level)    
 def sheep_ability(sheep,owner_board,prior_list = None):
     for _ in range(2):
         owner_board.order.insert(len(owner_board.order)+1,Unit("ram",sheep.ability_level*2,sheep.ability_level*2))# add it at the start of line in combat 
@@ -248,11 +247,6 @@ def badger_ability(badger,owner_board,prior_list=None):
             if index +1 < len(bigger_list):
                 
                 bigger_list[index + 1].take_damage(badger.Base_damage,badger)
-           
-         
-           
-                
-
 def ox_ability(ox,owner_board,prior_list=None):
     ox.buff_perk("melon")
     ox.temp_buff(1*ox.ability_level,0)
@@ -288,7 +282,6 @@ def bison_ability(bison,owner_board,prior_list= None):
             if unit.ability_level ==3:
                 bison.perma_buff(1*bison.ability_level,2*bison.ability_level)
                 break
-
 def blowfish_ability(blowfish,owner_board,prior_list):
 
     index = owner_board.enemy_board.random_single_unit()
@@ -305,7 +298,6 @@ def turtle_ability(turtle,owner_board,prior_list):
 def squirrel_ability(squirrel,owner_board,prior_list):
     for item in range(len(owner_board.shop.item_shop.item_list)):
         owner_board.shop.item_shop.item_list[item].cost =  owner_board.shop.item_shop.item_list[item].cost - squirrel.ability_level
-
 def penguin_ability (penguin,owner_board,prior_list):
      buff_units = []
      units_list = []
@@ -318,8 +310,7 @@ def penguin_ability (penguin,owner_board,prior_list):
      buff_units =np.random.choice(units_list,2)
 
      for index in buff_units:
-        owner_board.position_unit_dict[index].perma_buff(penguin.ability_level,penguin.ability_level) 
-     
+        owner_board.position_unit_dict[index].perma_buff(penguin.ability_level,penguin.ability_level)  
 def deer_ability(deer,owner_board,prior_list):
     for _ in range(deer.ability_level):
         owner_board.order.insert(len(owner_board.order)+1,Unit("bus",deer.ability_level*5,deer.ability_level*5))
@@ -327,7 +318,6 @@ def deer_ability(deer,owner_board,prior_list):
         for unit in prior_list:
             print(unit.Name)
         owner_board.order[-1].buff_perk("chilli")
-
 def whale_ability(whale,owner_board,prior_list):
     ## edit ability_level up 
     if not whale.isfull:
@@ -351,8 +341,9 @@ def whale_ability(whale,owner_board,prior_list):
     else:               
         owner_board.order.insert(len(owner_board.order)+1,whale.unit_in_mouth)
         owner_board.activate_summoners(len(owner_board.order)+1)  
+        whale.owner_board.order[len(owner_board.order)+1].update_state("summon-ed")
+        whale.owner_board.order[len(owner_board.order)+1].update(whale.owner_board.order)
     whale.ability_used = False
-
 def parrot_ability(parrot,owner_board,prior):
     parrot.ability_level = parrot.level
     for index,unit in enumerate(owner_board.position_unit_dict.values()):
@@ -365,7 +356,6 @@ def parrot_ability(parrot,owner_board,prior):
                 parrot.ability = owner_board.position_unit_dict[index+1].ability
                 print(parrot.ablity_game_state,"parrot ")
     parrot.ability_used = False
-
 def armadillo_ability(armadillo,owner_board,prior_list):
     for index in range(len(owner_board.order+owner_board.enemy_board.order)):
     
@@ -384,8 +374,7 @@ def rhino_ability(rhino,owner_board,prior_list):
             for index in range(len(owner_board.enemy_board.order)):
                 index= index *-1 +1
                 mult = 1
-                print(owner_board.enemy_board.order[index].Name,owner_board.enemy_board.order[index].base_hp)
-                print(owner_board.enemy_board.order[index].base_hp, owner_board.enemy_board.order[index].alive,"debugger 9000")
+              
                 if owner_board.enemy_board.order[index].base_hp <1 and not owner_board.enemy_board.order[index].alive:
                      continue
                     
@@ -396,7 +385,46 @@ def rhino_ability(rhino,owner_board,prior_list):
                     owner_board.enemy_board.order[index].take_damage(rhino.ability_level*4*mult,rhino)
                     
                     break
-             
+def monkey_ability(monkey,owner_board,prior_list):
+    last_unit = None
+  
+    for index in [4,3,2,1,0]:
+      
+        if owner_board.position_unit_dict[index] != None:
+         last_unit = index
+        
+         break
+    owner_board.position_unit_dict[last_unit].perma_buff(2*monkey.ability_level,3*monkey.ability_level)
+def scorpion_ability(scorpion,owner_board,prior):
+  
+    # if target == scorpion:
+     
+    scorpion.buff_perk("peanut")
+def crocodile_ability(crocodile,owner_board,prior):
+    for _ in range(crocodile.ability_level):
+        owner_board.enemy_board.order[0].take_damage(8,crocodile)
+def cow_ability(cow,owner_board,prior):
+    dict_of_cow_level = {1:[Item("milk",0),Item("milk",0)],2:[Item("better milk",0),Item("better milk",0)],3:[Item("best milk",0),Item("best milk",0)]}
+    owner_board.item_shop.item_list = dict_of_cow_level[cow.ability_level]
+def seal_ability(seal,target):
+    random_list =[]
+    if target == seal:
+        for index in seal.owner_board.position_unit_dict:
+            if seal.owner_board.position_unit_dict[index] != None:
+                random_list.append(index)
+
+        
+        for unit in np.random.choice(random_list,3):
+            # print(seal.owner_board.position_unit_dict.keys(),"seal keys")
+            seal.owner_board.position_unit_dict[unit].perma_buff(seal.ability_level,0)
+def chicken_ability(chicken,owner_board,prior):
+    for _ in range(chicken.level):
+        chicken.owner_board.order.insert(len(owner_board.order)+1,Unit("chick",1,chicken.Base_damage//2))# add it at the start of line in combat 
+        chicken.owner_board.activate_summoners(len(owner_board.order))  
+def shark_ability(shark,owner_board,num_of_faints):
+    shark.temp_buff(1*shark.ability_level*num_of_faints,2*shark.ability_level*num_of_faints)
+   
+# defpr
 dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish","cricket","horse"],
                3:["snail","crab","swan","rat","hedgehog","peacock","flmingo","worm","kangaroo","spider"],
                5:["dodo","badger","dolphin","giraffe","elephant","camel","rabbit","ox","dog","sheep"]
@@ -405,11 +433,11 @@ dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish",
                ,11:["leopard","boar","tiger","wolvrine","gorilla","dragon","mamotth","cat","snake","fly"]}
 status = ["buy","sell","faint","none","start_of_battle","start_of_turn","friend_ahead_attacks"]
 
-dict_of_tiers = {"duck":1,"beaver":1,"otter":1,"pig":1,"ant":1,"mosqutio":1,"mouse":1,"fish":1,"cricket":1,"horse":1,"bus":1,
+dict_of_tiers = {"duck":1,"beaver":1,"otter":1,"pig":1,"ant":1,"mosqutio":1,"mouse":1,"fish":1,"cricket":1,"horse":1,"bus":1,"chick":1,
                 "snail":2,"crab":2,"swan":2,"rat":2,"hedgehog":2,"peacock":2,"flmingo":2,"worm":2,"kangaroo":2,"spider":2,
                 "dodo":3,"badger":3,"dolphin":3,"giraffe":3,"elephant":3,"camel":3,"rabbit":3,"ox":3,"dog":3,"sheep":3,
                 "shunk":4,"hippo":4,"pufferfish":4,"turtle":4,"squrial":4,"penguin":4,"deer":4,"whale":4,"parrot":4,
-                "scropion":5,"crocidle":5,"rhino":5,"monkey":5,"armadilo":5,"cow":5,"seal":5,"chicken":5,"shark":5,"turkey":5,
+                "scorpion":5,"crocodile":5,"rhino":5,"monkey":5,"armadilo":5,"cow":5,"seal":5,"chicken":5,"shark":5,"turkey":5,
                 "leopard":6,"boar":6,"tiger":6,"wolvrine":6,"gorilla":6,"dragon":6,"mamotth":6,"cat":6,"snake":6,"fly":6}
 
 
@@ -426,9 +454,10 @@ ability_dict ={"ant":[ant_ability,"faint"],"otter":[otter_ability,"buy"],"mosqut
                "hippo":[hippo_ability,"knock_out"],"bison":[bison_ability,"end_of_turn"],"blowfish":[blowfish_ability,"hurt"],"turtle":[turtle_ability,"faint"],
                "squirrel":[squirrel_ability,"start_of_turn"],"penguin":[penguin_ability,"end_of_turn"],"bus":[skippper,None],"deer":[deer_ability,"faint"],
                "whale":[whale_ability,"start_of_battle"],"parrot":[parrot_ability,"end_of_turn"],"armadillo":[armadillo_ability,"start_of_battle"],
-               "rhino":[rhino_ability,"knock_out"]} 
+               "rhino":[rhino_ability,"knock_out"],"monkey":[monkey_ability,"end_of_turn"],"scorpion":[scorpion_ability,"summon-ed"],"crocodile":[crocodile_ability,"start_of_battle"],
+               "cow":[cow_ability,"buy"],"seal":[seal_ability,"eat food"],"chicken":[chicken_ability,"faint"],"chick":[skippper,None],"shark":[shark_ability,"ally_fainted"]} 
   
-modifier_dict= {"meat":[0,3],None:[0,0],"melon":[20,0],"chilli":[0,0]}
+modifier_dict= {"meat":[0,3],None:[0,0],"melon":[20,0],"chilli":[0,0],"peanut":[0,0]}
 class Unit: 
     ## add cap to 50 hp and 50 damage
     def __init__(self,Name,Damage,Hp):
@@ -469,7 +498,7 @@ class Unit:
     def update(self,owner_board,optional_board = None):
         # update only makes the ability in que be ware of this
         #another object has to force the ability to activate 
-        print(owner_board,optional_board,"boards")
+     
         self.owner_board = owner_board
         # print(self.state)
        
@@ -497,7 +526,7 @@ class Unit:
         modifier =[0,0]
         temp_modifier= [0,0]
 
-
+        
         for unit in [self,enemy]:
                 temp_modifier= [0,0]
                 perk_list = modifier_dict[unit.perk]
@@ -539,6 +568,8 @@ class Unit:
             self_damage = 0
     
         self.base_hp = self.base_hp - self_damage
+
+        
         ## remeber the two units attack at the same moment so don't apply the damage before 
         # if self.perk On_damage:
         # reduce damage
@@ -553,35 +584,47 @@ class Unit:
             if  chilli_damage<0:
                  chilli_damage = 0
             self.owner_board.order[-2].base_hp = self.owner_board.order[-2].base_hp - chilli_damage
-            self.owner_board.order[-2].update_state("hurt")
-            self.owner_board.order[-2].update(self.owner_board.order[-2].owner_board)
-
+          
             if self.owner_board.order[-2].base_hp  <= 0:
                 self.owner_board.order[-2].alive = False
                 self.owner_board.order[-2].base_hp = -1
-          
+            else:
+                self.owner_board.order[-2].update_state("hurt")
+                self.owner_board.order[-2].update(self.owner_board.order[-2].owner_board)
 
+          
+        print("one shot", self.perk =="peanut")  
+        if (self.perk == "peanut"  and self_damage> 20) or (self.perk == "peanut" and enemy.perk != "melon"):  
+            enemy.base_hp = 0
+            
+        if (enemy.perk == "peanut"  and enemy_damage> 20) or (enemy.perk == "peanut" and self.perk != "melon"):  
+            self.base_hp = 0
         ## check if they have less hp than started?
-        enemy.update_state("hurt")
-        enemy.update(enemy.owner_board)
-        self.update_state("hurt")
-        self.update(self.owner_board)
+            
+        
+       
         print(self.Name, " attacked ",enemy.Name )
         print(enemy.Name, " attacked ",self.Name )
         
         
         if enemy.base_hp  <= 0:
+            
             enemy.alive = False
             enemy.base_hp = -1
                   
         else:
+            enemy.update_state("hurt")
+            enemy.update(enemy.owner_board)
             enemy.update_state("after_attack")
             enemy.update(enemy.owner_board)
+
         if self.base_hp <= 0:
             self.alive = False
             self.base_hp = -1 
             
         else:
+            self.update_state("hurt")
+            self.update(self.owner_board)
             self.update_state("after_attack")
             self.update(self.owner_board)        
 
@@ -624,7 +667,7 @@ class Unit:
         self.base_hp= self.base_hp -damage_amount
         # if self.perk On_damage:
         # reduce damage
-        print("taking damage")
+
         if damage_amount > 0:
             self.update_state("hurt")
             self.update(self.owner_board)
@@ -633,12 +676,7 @@ class Unit:
             self.alive = False
             attacker.update_state("knock_out")
             attacker.update(attacker.owner_board)
-            print("RHINO KILLED")
-        
-
-        
-       
-
+     
             
 class Board:
     # start board with a draw so snail doesn't give hp
@@ -652,7 +690,7 @@ class Board:
         self.targetable_units =[]
         self.position_unit_dict = {0:None,1:None,2:None,3:None,4:None}
         self.last_round_lost = False
-
+        self.fainted_this_round = 0
     def swap_unit_place(self,origin,end):
              if origin >5 or end>5:
                  print("Out of range")
@@ -695,30 +733,25 @@ class Board:
         return len(self.order)
     def remove_fainted_list(self):
       
-        # order_copy = copy.deepcopy(self.order)
+        # order_copy = copy.deepcopy(self.order)s
+        fainted_this_round =0
+        unit_fainted= False
         for index,unit in enumerate(self.order):
         
             if not unit.alive:
                 unit.update_state("faint")
                 unit.update(self,self.order)
-                print(unit.Name,"NAMER")
+                fainted_this_round = fainted_this_round +1
+                unit_fainted = True
                 if index-1 >= 0:
                     self.order[index-1].update_state("faint_ahead")
                     self.order[index-1].update(self,self.order)
-        
         self.order = [x for x in self.order if  x.alive_check()]
-        # for unit in fainted__list:
-        #         unit.update_state("faint")
-        #         unit.update(self,temp_list)
-        #         print(unit.Name,"NAMER")
+        if unit_fainted:
+            for unit in self.order:
+                unit.update_state("ally_fainted")
+                unit.update(self,fainted_this_round)
         
-        # self.order = temp_list
-        # self.order = temp_list
-        # for unit in self.temp_list_for_summs:
-        #     temp_list.insert(0,unit)
-        # self.order = temp_list
-        # self.temp_list_for_summs=[]
-        # print(self.order[0].alive_check())
     def total_of_hp_and_damage(self):
         total_hp =0 
         total_damage = 0
@@ -829,13 +862,13 @@ class Board:
          for unit in self.order:
             if unit != None:
                 if unit.ablity_game_state == "summon":
-                    print(unit.state,unit.Name,"Unit staeeeeeeee")
+                    # print(unit.state,unit.Name,"Unit staeeeeeeee")
                     unit.ability(unit,target)
         else:
          for unit in self.position_unit_dict.values():
             if unit != None:
                 if unit.ablity_game_state == "summon":
-                    print(unit.state,unit.Name,"Unit staeeeeeeee")
+                    # print(unit.state,unit.Name,"Unit staeeeeeeee")
                     unit.ability(unit,target)
     def start_of_battle_for_units(self):
         for unit in self.order:
@@ -1008,8 +1041,7 @@ def battle_phase(board1,board2,round_num = 320,visible = False):
             
     ##
 
-
-    
+  
 dict_of_pets= {1:["duck","beaver","otter","pig","ant","mosqutio","mouse","fish","cricket","horse"],
                3:["snail","crab","swan","rat","hedgehog","peacock","flmingo","worm","kangaroo","spider"],
                5:["dodo","badger","dolphin","giraffe","elephant","camel","rabbit","ox","dog","sheep"]
@@ -1099,7 +1131,8 @@ class Unit_store:
             if self.gold >2:
                 self.gold =self.gold-3
                 
-
+                # summon-ed
+                
                 #bought effects
                 # self.shop_units[index].bought = True
                 self.shop_units[index].update_state("buy")
@@ -1109,14 +1142,16 @@ class Unit_store:
                 
                 self.board.activate_summoners(self.shop_units[index])               
                 self.board.position_unit_dict[place]= self.shop_units[index]
-                
+
+                self.board.position_unit_dict[place].update_state("summon-ed")
+                self.board.position_unit_dict[place].update(self.board)
                 self.board.position_unit_dict[place].position =  place
 
                 # np.insert( self.player_units,place,self.shop_units[index]) 
                 # print(self.shop_units[index],"shop unit index")
 
                 self.shop_units= np.delete(self.shop_units,index) 
-
+    
                 # print("bought the ",self.shop_units[0].Name,place,"bought test")
 
                 ##DRY TRY TO MAKE A FUNCTION 
@@ -1139,6 +1174,7 @@ class Unit_store:
                  self.board.position_unit_dict[place].level_amount =self.board.position_unit_dict[place].level_amount - 3
                  self.board.position_unit_dict[place].level = self.board.position_unit_dict[place].level+1
                  self.ability_level = self.ability_level +1 
+                 #####WIP ADD BUY UNITS USE THEIR UPGRADED ABILITY 
         else:
              print("UNIT IS ALREADY IN THAT PLACE")
         
@@ -1204,11 +1240,10 @@ class Unit_store:
             #dev tool to enable testing
             self.gold = num
 def apple_ability(target):
-        ## Needs testing
+      
         target.perma_buff(1,1)
 
-        
-        print("apple ability worked")
+   
 def apple_1_ability(target):
     target.perma_buff(2,2)
 def apple_2_ability(target):
@@ -1222,9 +1257,19 @@ def honey_ability(target,optional_board):
 def cupcake_ability(target):
     target.temp_buff(3,3)
 
-dict_of_items_ability = {"apple":[apple_ability,"abilty","buff"],"Better Apple":[apple_1_ability,"abilty","buff"],
-                         "Best Apple":[apple_2_ability,"abilty","buff"],"honey":[honey_ability,"perk","buff"],
-                         "meat":[None,"perk","buff"],"cupcake":[cupcake_ability,"abilty","buff"],"melon":[None,"perk","buff","hurt"],"chilli":[None,"perk","buff"]}
+def  milk_ability(target):
+        target.perma_buff(1,2)
+   
+def milk_1_ability(target):
+    target.perma_buff(2,4)
+def milk_2_ability(target):
+    target.perma_buff(3,6)
+
+dict_of_items_ability = {"apple":[apple_ability,"ability","buff"],"better apple":[apple_1_ability,"ability","buff"],
+                         "best apple":[apple_2_ability,"ability","buff"],"honey":[honey_ability,"perk","buff"],
+                         "meat":[None,"perk","buff"],"cupcake":[cupcake_ability,"ability","buff"],"melon":[None,"perk","buff","hurt"]
+                         ,"chilli":[None,"perk","buff"],"peanut":[None,"perk","buff"],"milk":[milk_ability,"ability","buff"],
+                         "better milk":[milk_1_ability,"ability","buff"],"best milk":[milk_2_ability,"ability","buff"]}
 class Item: # becareful there are many types of abiltiies from buffs to reducing damage once 
     ## link to the player unit board
     def __init__(self,name,cost = 3):
@@ -1238,7 +1283,7 @@ class Item: # becareful there are many types of abiltiies from buffs to reducing
     def use_ability(self,target):
         # print(dict_of_items_ability[self.name][1],"self name 133")
            
-        if dict_of_items_ability[self.name][1]  == "abilty":
+        if dict_of_items_ability[self.name][1]  == "ability":
             
             self.ability(target)
         else:
@@ -1258,10 +1303,9 @@ class Item: # becareful there are many types of abiltiies from buffs to reducing
             target.perk_disable = dict_of_items_ability[self.name][3]
         
         print("given_perk")
-    
 
-
-dict_of_items_with_stats = {"apple": Item("apple"), "Better Apple":Item("Better Apple"),"Best Apple":("Better Apple"),"honey":Item("honey"),"meat":Item("meat") ,"cupcake":Item("cupcake"),"melon":Item("melon")}
+dict_of_items_with_stats = {"apple": Item("apple"), "better Apple":Item("better apple"),"best apple":("best apple"),"honey":Item("honey")
+                            ,"meat":Item("meat") ,"cupcake":Item("cupcake"),"melon":Item("melon"),"milk":Item("milk"),"better milk":Item("better milk"),"best milk":("best milk") }
 
 dict_of_items={1:["apple","honey"],3:["pill","meat","cupcake"],5:["salad","onion"],7:["canned food","pear"],9:["pepper","choco","sushi"],11:["steak","melon","mushroom","pizza"]}
 class Item_shop:
@@ -1526,21 +1570,23 @@ shop= Unit_store()
 item_shop= Item_shop(shop)
 board.shop_linking(shop)
 shop.link_to_board(board)   
+shop.link_item_shop(item_shop)
 shop.generate_units()
 shop.gold_override(9999)
 board.last_round_lost = True    
                         # shop.reroll()
-shop.edit_shop([["rhino",1,2],["pig",1,1],["pig",1,1]])
+shop.edit_shop([["pig",1,1],["pig",1,1],["shark",1,1]])
 shop.buy(0,4)  
 shop.buy(0,1)
 shop.buy(0,3)   
 board.start_of_turn_for_units()
 board.end_of_turn_for_units()
-
-
+item_shop.show_items()
 board_2 = copy.deepcopy(board)
-board_2.position_unit_dict[4] = Unit("pig",1,1)
-total_hp =battle_phase(board,board_2, 3,"visable")
+
+# board_2.position_unit_dict[4] = Unit("pig",1,19)
+# board_2.position_unit_dict[4].buff_perk("peanut")
+total_hp =battle_phase(board,board_2, 1,"visable")
     
 
 ###
@@ -2254,7 +2300,7 @@ class CustomTests(unittest.TestCase):
                                 # board.shop.gold_check()#
         board_2 = copy.deepcopy(board)
         total_hp =battle_phase(board,board_2, 1,"visable")      
-        self.assertEqual(total_hp,[11,11],"failed turtle test")
+        self.assertEqual(total_hp,[11,11],"failed penguin test")
     def test_whale_ability(self):
         board = Board()
         shop= Unit_store()
@@ -2275,7 +2321,113 @@ class CustomTests(unittest.TestCase):
         board_2 = copy.deepcopy(board)
         total_hp =battle_phase(board,board_2, 1,"visable")
     # def test_parrot_ability(self):
+    # def test_rhino_ability(self):
+    def test_monkey_ability(self):
+        board = Board()
+        shop= Unit_store()
+        item_shop= Item_shop(shop)
+        board.shop_linking(shop)
+        shop.link_to_board(board)   
+        shop.generate_units()
+        shop.gold_override(9999)
+        board.last_round_lost = True    
+                                # shop.reroll()
+        shop.edit_shop([["monkey",1,1],["pig",1,1],["pig",1,1]])
+        shop.buy(0,4)  
+        shop.buy(0,1)
+        shop.buy(0,3)   
+        board.start_of_turn_for_units()
+        board.end_of_turn_for_units()
 
+        board_2 = copy.deepcopy(board)
+        # board_2.position_unit_dict[4] = Unit("pig",1,19)
+        total_hp =battle_phase(board,board_2, 3,"visable")
+        self.assertEqual(total_hp,[5,6],"failed monkey test")
+    def test_scorpion_ability(self):
+        board = Board()
+        shop= Unit_store()
+        item_shop= Item_shop(shop)
+        board.shop_linking(shop)
+        shop.link_to_board(board)   
+        shop.generate_units()
+        shop.gold_override(9999)
+        board.last_round_lost = True    
+                                # shop.reroll()
+        shop.edit_shop([["scorpion",1,1],["pig",1,1],["pig",1,1]])
+        shop.buy(0,4)  
+        shop.buy(0,1)
+        shop.buy(0,3)   
+        board.start_of_turn_for_units()
+        board.end_of_turn_for_units()
+
+        board_2 = copy.deepcopy(board)
+        board_2.position_unit_dict[4] = Unit("pig",1,19)
+        board_2.position_unit_dict[4].buff_perk("peanut")
+        total_hp =battle_phase(board,board_2, 1,"visable")
+    def test_crocodile_ability(self):
+        board = Board()
+        shop= Unit_store()
+        item_shop= Item_shop(shop)
+        board.shop_linking(shop)
+        shop.link_to_board(board)   
+        shop.generate_units()
+        shop.gold_override(9999)
+        board.last_round_lost = True    
+                                # shop.reroll()
+        shop.edit_shop([["crocodile",1,1],["pig",1,1],["pig",1,1]])
+        shop.buy(0,4)  
+        shop.buy(0,1)
+        shop.buy(0,3)   
+        board.start_of_turn_for_units()
+        board.end_of_turn_for_units()
+
+        board_2 = copy.deepcopy(board)
+        # board_2.position_unit_dict[4] = Unit("pig",1,19)
+        # board_2.position_unit_dict[4].buff_perk("peanut")
+        total_hp =battle_phase(board,board_2, 1,"visable")
+    def test_seal_ability(self):
+        board = Board()
+        shop= Unit_store()
+        item_shop= Item_shop(shop)
+        board.shop_linking(shop)
+        shop.link_to_board(board)   
+        shop.link_item_shop(item_shop)
+        shop.generate_units()
+        shop.gold_override(9999)
+        board.last_round_lost = True    
+                                # shop.reroll()
+        shop.edit_shop([["cow",1,1],["seal",1,1],["pig",1,1]])
+        shop.buy(0,4)  
+        shop.buy(0,1)
+        shop.buy(0,3)   
+        board.start_of_turn_for_units()
+        board.end_of_turn_for_units()
+        item_shop.show_items()
+        board_2 = copy.deepcopy(board)
+        item_shop.buy(0,1)
+    def test_shark_ability(self):
+        board = Board()
+        shop= Unit_store()
+        item_shop= Item_shop(shop)
+        board.shop_linking(shop)
+        shop.link_to_board(board)   
+        shop.link_item_shop(item_shop)
+        shop.generate_units()
+        shop.gold_override(9999)
+        board.last_round_lost = True    
+                                # shop.reroll()
+        shop.edit_shop([["pig",1,1],["pig",1,1],["shark",1,1]])
+        shop.buy(0,4)  
+        shop.buy(0,1)
+        shop.buy(0,3)   
+        board.start_of_turn_for_units()
+        board.end_of_turn_for_units()
+        item_shop.show_items()
+        board_2 = copy.deepcopy(board)
+
+        # board_2.position_unit_dict[4] = Unit("pig",1,19)
+        # board_2.position_unit_dict[4].buff_perk("peanut")
+        total_hp =battle_phase(board,board_2, 1,"visable")
 # unittest.main() 
 
 
