@@ -689,41 +689,7 @@ class Unit:
             
         if (enemy.perk == "peanut"  and enemy_damage> 20) or (enemy.perk == "peanut" and self.perk != "melon"):  
             self.base_hp = 0
-        ## check if they have less hp than started?
-            
-        
-       
-        print(self.Name, " attacked ",enemy.Name )
-        print(enemy.Name, " attacked ",self.Name )
-        
-        
-        if enemy.base_hp  <= 0:
-            
-            enemy.alive = False
-            enemy.base_hp = -1
-                  
-        else:
-            enemy.update_state("hurt")
-            enemy.update(enemy.owner_board)
-            enemy.update_state("after_attack")
-            enemy.update(enemy.owner_board)
-
-        if self.base_hp <= 0:
-            self.alive = False
-            self.base_hp = -1 
-            
-        else:
-            self.update_state("hurt")
-            self.update(self.owner_board)
-            self.update_state("after_attack")
-            self.update(self.owner_board)        
-
-        if self.alive and not enemy.alive:
-            self.update_state("knock_out")
-            self.update(self.owner_board)  
-        elif not self.alive and enemy.alive:
-            enemy.update_state("knock_out")
-            enemy.update(enemy.owner_board)          
+              
     def buff_perk(self,perk):
         Item(perk).give_perk(self)      
     def alive_check(self):
@@ -753,28 +719,61 @@ class Unit:
             
             # if self.perk On_damage:
             # perk checks
-            match self.perk:
-                case pattern-1:
-                   action-1
-            if self.perk ==None:
-                if self.perk == "melon":
-                    damage_amount = damage_amount - 20
-                    self.perk = None
-                if self.perk == "coconut":
-                    damage_amount = 0 
-                    self.perk = None
+            if self.perk != None:
+                match self.perk:
+                    # Defensive perks have to reduce the damage
+                    case "melon":
+                        damage_amount = damage_amount - 20
+                        self.perk = None
+                    case "coconut":
+                        damage_amount = 0 
+                        self.perk = None
+                    case "garlic":
+                        if damage_amount < 2:
+                            damage_amount = damage_amount -2
+                        else:
+                            damage_amount = damage_amount -1 # Gralic has capped damage reduction
 
             self.base_hp= self.base_hp -damage_amount
 
-            if damage_amount > 0:
-                self.update_state("hurt")
-                self.update(self.owner_board)
-            if self.base_hp <= 0:
-            
-                self.alive = False
-                attacker.update_state("knock_out")
-                attacker.update(attacker.owner_board)
         
+        else:
+             ## Attacking
+             ## PS: FROM THE PERSON GETTING ATTACKED PERSEPCTIVE
+            match attacker.perk:
+                case "meat":
+                    damage_amount = damage_amount + 3
+                case "peanut":
+                    if  ( damage_amount=>20) or   (self.perk != "melon" ):
+                        damage_amount = 2000
+
+            if self.perk != None:
+                match self.perk:
+                    # Defensive perks have to reduce the damage
+                    case "melon":
+                        damage_amount = damage_amount - 20
+                        self.perk = None
+                    case "coconut":
+                        damage_amount = 0 
+                        self.perk = None
+                    case "garlic":
+                        if damage_amount < 2:
+                            damage_amount = damage_amount -2
+                        else:
+                            damage_amount = damage_amount -1 # Gralic has capped damage reduction
+
+            self.base_hp= self.base_hp -damage_amount
+
+        if damage_amount > 0:
+            self.update_state("hurt")
+            self.update(self.owner_board)
+        if self.base_hp <= 0:
+            
+            self.alive = False
+            attacker.update_state("knock_out")
+            attacker.update(attacker.owner_board)
+           
+            
     # def damage_caculate(self,target): ## do all damage cacl here
             
 class Board:
