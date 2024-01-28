@@ -31,38 +31,9 @@
 
 # print(test_list)
 
-class Car:
-    def __init__(self, make, model, year):
-        self.make = make
-        self.model = model
-        self.year = year
-
-    def __str__(self):
-        return f"{self.year} {self.make} {self.model}"
-
-class CarShop:
-    def __init__(self):
-        self.car_inventory = {
-            "Rose": Car("Toyota", "Camry", 2022),
-            "Tulip": Car("Honda", "Civic", 2021),
-            "Sunflower": Car("Ford", "Escape", 2023)
-        }
-
-    def add_car(self, flower_name, car):
-        self.car_inventory[flower_name] = car
-
-    
-
-# Example usage:
-car_shop = CarShop()
-
-# Display the initial inventory
-
-print(car_shop.car_inventory["Rose"])
-
-# Add a new car to the inventory
-new_car = Car("Chevrolet", "Malibu", 2024)
-car_shop.add_car("Daisy", new_car)
+a=  [2,3]
+a.append(5,4)
+print(a)
 
 # Display the updated inventory
 
